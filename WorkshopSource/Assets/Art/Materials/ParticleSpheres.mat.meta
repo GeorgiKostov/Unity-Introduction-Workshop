@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: e5953ca8bda3497419c9efd2213d42c1
+timeCreated: 1492084344
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149311
+  packageName: 'Unity Learn | Creator Kit: Puzzle | URP'
+  packageVersion: 1.7
+  assetPath: Assets/Creator Kit - Puzzle/Art/Materials/ParticleSpheres.mat
+  uploadId: 620988

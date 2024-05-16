@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5cb3d412579e6544b8718b834394cdf5
+timeCreated: 1473946745
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 149311
+  packageName: 'Unity Learn | Creator Kit: Puzzle | URP'
+  packageVersion: 1.7
+  assetPath: Assets/Creator Kit - Puzzle/Art/Materials/Skybox_HDR.mat
+  uploadId: 620988
