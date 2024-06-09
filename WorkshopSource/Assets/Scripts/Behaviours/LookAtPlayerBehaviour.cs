@@ -9,7 +9,7 @@ namespace Assets.Scripts.Behaviours
 
         private void Awake()
         {
-            target = FindObjectOfType<PlayerMoveController>().transform;
+            target = FindObjectOfType<Player3DMoveController>().transform;
         }
 
         void Update()

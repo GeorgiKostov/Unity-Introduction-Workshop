@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Controllers
 {
-    public class PlayerMoveController : MonoBehaviour
+    public class Player3DMoveController : MonoBehaviour
     {
         public float moveSpeed = 5f;
         public Camera mainCamera; // Assign your camera in the Inspector
