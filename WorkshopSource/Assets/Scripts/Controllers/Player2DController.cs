@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Assets.Scripts.Managers;
 using TMPro;
 using UnityEngine;
 
@@ -11,7 +12,6 @@ public class Player2DController : MonoBehaviour
     int coinsCollected;
     bool isGrounded;
     Rigidbody2D rb;
-    Animator animator;
     string currentState;
 
     // Animation states
@@ -19,10 +19,19 @@ public class Player2DController : MonoBehaviour
     const string PLAYER_RUN = "Run";
     const string PLAYER_JUMP = "Jump";
 
+    private Animator animator;
+    public HealthBar healthBar;
+    private int currentHealth;
+    public int MaxHealth = 100;
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        currentHealth = MaxHealth / 2;
+        healthBar.UpdateHealth(currentHealth, MaxHealth);
+        isGrounded = true;
     }
 
     void Update()
@@ -91,6 +100,26 @@ public class Player2DController : MonoBehaviour
             Destroy(other.gameObject);
             coinsCollected++;
             coinText.text = coinsCollected.ToString();
+        }
+
+        if (other.gameObject.CompareTag("Health"))
+        {
+            if (currentHealth < MaxHealth)
+            {
+                currentHealth++;
+            }
+            Destroy(other.gameObject);
+            healthBar.UpdateHealth(currentHealth, MaxHealth);
+        }
+
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            if (currentHealth > 0)
+            {
+                currentHealth--;
+            }
+            Destroy(other.gameObject);
+            healthBar.UpdateHealth(currentHealth, MaxHealth);
         }
     }
 }
