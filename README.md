@@ -449,4 +449,68 @@
     }
   ```
 
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerMove : MonoBehaviour
+{
+    public SpriteRenderer renderer;
+    public Color blue;
+    private InputActions actions;
+    public float moveSpeed = 5f;
+    public float jumpForce = 7f;
+    private Rigidbody2D rb;
+    private float movementX;
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        actions = new InputActions();
+        actions.Basic.Enable();
+        actions.Basic.Jump.performed += Jump;
+        actions.Basic.MoveX.performed += MoveXOnperformed;
+        actions.Basic.MoveX.canceled += MoveXOnperformed;
+    }
+
+    private void MoveXOnperformed(InputAction.CallbackContext context)
+    {
+        movementX = context.ReadValue<float>();
+        Debug.Log($"{movementX}");
+    }
+
+    private void Jump(InputAction.CallbackContext context)
+    {
+        Debug.Log($"Jump");
+        rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+    }
+
+    private void FixedUpdate()
+    {
+        rb.linearVelocity = new Vector2(movementX * moveSpeed, rb.linearVelocity.y);
+    }
+
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy"))
+        {
+            Debug.Log("Collided with Enemy!");
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Health"))
+        {
+            Destroy(other.gameObject); // Collect the pickup
+            Debug.Log("Health Collected!");
+        }
+
+        if (other.CompareTag("Coin"))
+        {
+            Destroy(other.gameObject); // Collect the pickup
+            Debug.Log("Coin Collected!");
+        }
+    }
+}
 
