@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Assets.Scripts.Managers;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class Player2DController : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class Player2DController : MonoBehaviour
     const string PLAYER_JUMP = "Jump";
 
     private Animator animator;
-    public HealthBar healthBar;
+    [FormerlySerializedAs("healthBar")] public PlayerStats playerStats;
     private int currentHealth;
     public int MaxHealth = 100;
 
@@ -30,7 +31,7 @@ public class Player2DController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         currentHealth = MaxHealth / 2;
-        healthBar.UpdateHealth(currentHealth, MaxHealth);
+        this.playerStats.UpdateHealth(currentHealth, MaxHealth);
         isGrounded = true;
     }
 
@@ -109,7 +110,7 @@ public class Player2DController : MonoBehaviour
                 currentHealth++;
             }
             Destroy(other.gameObject);
-            healthBar.UpdateHealth(currentHealth, MaxHealth);
+            this.playerStats.UpdateHealth(currentHealth, MaxHealth);
         }
 
         if (other.gameObject.CompareTag("Enemy"))
@@ -119,7 +120,7 @@ public class Player2DController : MonoBehaviour
                 currentHealth--;
             }
             Destroy(other.gameObject);
-            healthBar.UpdateHealth(currentHealth, MaxHealth);
+            this.playerStats.UpdateHealth(currentHealth, MaxHealth);
         }
     }
 }
