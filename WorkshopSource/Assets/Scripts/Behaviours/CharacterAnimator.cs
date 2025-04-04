@@ -7,6 +7,7 @@ namespace Behaviours
     {
         private Animator animator;
         private InputActions inputActions;
+        public AudioSource jumpSound;
 
         void Start()
         {
@@ -42,6 +43,7 @@ namespace Behaviours
         private void Jump(InputAction.CallbackContext context)
         {
             ChangeAnimationState("Jump");
+            jumpSound.Play();
         }
     }
 }
