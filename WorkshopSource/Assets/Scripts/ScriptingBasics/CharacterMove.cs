@@ -36,13 +36,13 @@ public class CharacterMove : MonoBehaviour
 
     private void FixedUpdate()
     {
-        rb.velocity = new Vector2(movementX * moveSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(movementX * moveSpeed, rb.linearVelocity.y);
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
         // Check if player is grounded before jumping
-        if (Mathf.Abs(rb.velocity.y) < 0.01f)
+        if (Mathf.Abs(rb.linearVelocity.y) < 0.01f)
         {
             rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
         }
@@ -57,7 +57,7 @@ public class CharacterMove : MonoBehaviour
             float enemyTop = enemyCollider.bounds.max.y;
 
             // Slight tolerance to avoid edge cases (like grazing the side)
-            bool isPlayerAbove = contact.point.y >= enemyTop - 0.1f && rb.velocity.y < 0;
+            bool isPlayerAbove = contact.point.y >= enemyTop - 0.1f && rb.linearVelocity.y < 0;
             if (isPlayerAbove)
             {
                 Destroy(other.gameObject);

@@ -45,7 +45,7 @@ public class Player2DController : MonoBehaviour
     void Move()
     {
         float move = Input.GetAxis("Horizontal");
-        rb.velocity = new Vector2(move * moveSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(move * moveSpeed, rb.linearVelocity.y);
 
         if (move != 0)
         {
@@ -57,7 +57,7 @@ public class Player2DController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             ChangeAnimationState(PLAYER_JUMP);
             isGrounded = false;
         }
@@ -67,7 +67,7 @@ public class Player2DController : MonoBehaviour
     {
         if (isGrounded)
         {
-            if (Mathf.Abs(rb.velocity.x) > 0.1f)
+            if (Mathf.Abs(rb.linearVelocity.x) > 0.1f)
             {
                 ChangeAnimationState(PLAYER_RUN);
             }

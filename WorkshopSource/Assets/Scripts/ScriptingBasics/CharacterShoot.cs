@@ -45,7 +45,7 @@ namespace ScriptingBasics
 
             // Apply velocity
             Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-            rb.velocity = direction * bulletSpeed;
+            rb.linearVelocity = direction * bulletSpeed;
         }
     }
 }
