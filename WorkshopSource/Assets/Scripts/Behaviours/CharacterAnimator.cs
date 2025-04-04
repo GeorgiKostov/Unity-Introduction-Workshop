@@ -44,6 +44,7 @@ namespace Behaviours
         {
             ChangeAnimationState("Jump");
             jumpSound.Play();
+            Debug.Log("Jump");
         }
     }
 }
