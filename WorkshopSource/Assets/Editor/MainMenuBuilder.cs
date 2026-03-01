@@ -81,21 +81,35 @@ public class MainMenuBuilder
         rtSub.sizeDelta = new Vector2(800, 80);
         rtSub.anchoredPosition = new Vector2(0, 120);
 
-        // Start Button
-        GameObject bStart = CreateButton("StartButton", canvasGo, "PLAY MATCH", new Color(0.15f, 0.55f, 0.35f), new Vector2(400, 100), new Vector2(0, -50));
-        Button btnStart = bStart.GetComponent<Button>();
+        // Session 1 Button
+        GameObject bSes1 = CreateButton("Session1Button", canvasGo, "SESSION 1", new Color(0.15f, 0.4f, 0.6f), new Vector2(400, 80), new Vector2(-250, -20));
+        Button btnSes1 = bSes1.GetComponent<Button>();
+
+        // Session 2 Button
+        GameObject bSes2 = CreateButton("Session2Button", canvasGo, "SESSION 2", new Color(0.15f, 0.5f, 0.5f), new Vector2(400, 80), new Vector2(250, -20));
+        Button btnSes2 = bSes2.GetComponent<Button>();
+
+        // Session 3 Button
+        GameObject bSes3 = CreateButton("Session3Button", canvasGo, "SESSION 3", new Color(0.5f, 0.4f, 0.2f), new Vector2(400, 80), new Vector2(-250, -120));
+        Button btnSes3 = bSes3.GetComponent<Button>();
+
+        // Session 4 Button
+        GameObject bSes4 = CreateButton("Session4Button", canvasGo, "SESSION 4 (FINAL)", new Color(0.15f, 0.55f, 0.35f), new Vector2(400, 80), new Vector2(250, -120));
+        Button btnSes4 = bSes4.GetComponent<Button>();
 
         // Quit Button
-        GameObject bQuit = CreateButton("QuitButton", canvasGo, "QUIT GAME", new Color(0.75f, 0.15f, 0.25f), new Vector2(400, 100), new Vector2(0, -180));
+        GameObject bQuit = CreateButton("QuitButton", canvasGo, "QUIT GAME", new Color(0.75f, 0.15f, 0.25f), new Vector2(400, 80), new Vector2(0, -240));
         Button btnQuit = bQuit.GetComponent<Button>();
 
         // Wire Events
-        // The Start button should load Scene index 1 (Session 4 will be index 1)
-        UnityEditor.Events.UnityEventTools.AddStringPersistentListener(btnStart.onClick, loader.LoadSceneByName, "Session4");
+        UnityEditor.Events.UnityEventTools.AddStringPersistentListener(btnSes1.onClick, loader.LoadSceneByName, "Session1");
+        UnityEditor.Events.UnityEventTools.AddStringPersistentListener(btnSes2.onClick, loader.LoadSceneByName, "Session2");
+        UnityEditor.Events.UnityEventTools.AddStringPersistentListener(btnSes3.onClick, loader.LoadSceneByName, "Session3");
+        UnityEditor.Events.UnityEventTools.AddStringPersistentListener(btnSes4.onClick, loader.LoadSceneByName, "Session4");
         UnityEditor.Events.UnityEventTools.AddPersistentListener(btnQuit.onClick, loader.QuitGame);
 
         EditorSceneManager.SaveScene(newScene, "Assets/Scenes/MainMenu.unity");
-        Debug.Log("Main Menu built successfully!");
+        Debug.Log("Main Menu built successfully with all 4 sessions!");
     }
 
     private static GameObject CreateButton(string name, GameObject parent, string text, Color btnColor, Vector2 sizeDelta, Vector2 pos)

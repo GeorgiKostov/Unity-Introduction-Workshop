@@ -49,6 +49,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Room
+    uniqueID: 0
+    locked: 0
+  - name: Objects
+    uniqueID: 0
+    locked: 0
   m_RenderingLayers:
   - Default
   - Light Layer 1

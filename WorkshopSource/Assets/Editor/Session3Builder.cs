@@ -12,6 +12,7 @@ using Workshop.Session3.GameFlow;
 using Workshop.Session3.Feedback;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
+using Workshop.Session4.Advanced;
 
 public class Session3Builder
 {
@@ -232,7 +233,22 @@ public class Session3Builder
         CreateTextObj("WinScore", winPnl.transform, new Vector2(0.5f, 0.5f), new Vector2(0, -120), new Vector2(500, 60), 36, new Color(1f, 0.85f, 0f, 1f), "Score: 0");
         winPnl.SetActive(false);
 
+        // Exit Button
+        GameObject bQuit = CreatePanelObj("ExitButton", canvasObj.transform, new Color(0.75f, 0.15f, 0.25f, 1f));
+        // Reset RectTransform so it's a clear button in the top left instead of a full panel stretch
+        RectTransform rtQuit = bQuit.GetComponent<RectTransform>();
+        rtQuit.anchorMin = new Vector2(0f, 1f);
+        rtQuit.anchorMax = new Vector2(0f, 1f);
+        rtQuit.pivot = new Vector2(0f, 1f);
+        rtQuit.sizeDelta = new Vector2(250, 70);
+        rtQuit.anchoredPosition = new Vector2(20, -20);
+        rtQuit.offsetMin = new Vector2(20, rtQuit.offsetMin.y);
+        rtQuit.offsetMax = new Vector2(rtQuit.offsetMax.x, -20);
+        bQuit.AddComponent<Button>();
+        CreateTextObj("Text", bQuit.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(250, 70), 32, Color.white, "MAIN MENU", FontStyles.Bold);
+
         // Wire Events
+        UnityEditor.Events.UnityEventTools.AddStringPersistentListener(bQuit.GetComponent<Button>().onClick, gameMgrObj.AddComponent<SceneLoader>().LoadSceneByName, "MainMenu");
         UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(scoreMgr.ScoreChanged, scoreDisplay.UpdateScoreText);
         
         // Use generic AddPersistentListener with reflection approach for SetActive since method has 1 implicit param
@@ -245,18 +261,18 @@ public class Session3Builder
         GameObject audioZones = new GameObject("AudioZones");
         CreateTriggerZone<AudioOnTrigger>("AudioZone_TierUp_A", new Vector3(-10, 3, -2), new Vector3(12, 6, 4), audioZones.transform, (c) => {
             SetSerializedValue(c, "m_volume", 0.8f);
-            SetSerializedValue(c, "m_playOnce", true);
+            SetSerializedValue(c, "m_isSinglePlay", true);
         });
         CreateTriggerZone<AudioOnTrigger>("AudioZone_TierUp_B", new Vector3(0, 8, -16), new Vector3(16, 6, 4), audioZones.transform, (c) => {
             SetSerializedValue(c, "m_volume", 1.0f);
-            SetSerializedValue(c, "m_playOnce", true);
+            SetSerializedValue(c, "m_isSinglePlay", true);
         });
 
         // 9. PARTICLE ZONES
         GameObject partZones = new GameObject("ParticleZones");
         CreateTriggerZone<ParticleOnTrigger>("ParticleZone_Win", new Vector3(0, 8, -18), new Vector3(10, 4, 3), partZones.transform, (c) => {
-            SetSerializedValue(c, "m_spawnAtPlayer", true);
-            SetSerializedValue(c, "m_triggerOnce", false);
+            SetSerializedValue(c, "m_shouldSpawnAtPlayer", true);
+            SetSerializedValue(c, "m_isSingleTrigger", false);
         });
 
         EditorSceneManager.MarkSceneDirty(newScene);

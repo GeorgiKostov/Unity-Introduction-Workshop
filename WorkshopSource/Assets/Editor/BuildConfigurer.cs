@@ -11,6 +11,9 @@ public class BuildConfigurer
         EditorBuildSettingsScene[] scenes = new EditorBuildSettingsScene[]
         {
             new EditorBuildSettingsScene("Assets/Scenes/MainMenu.unity", true),
+            new EditorBuildSettingsScene("Assets/Scenes/Session1_Demo.unity", true),
+            new EditorBuildSettingsScene("Assets/Scenes/Session2.unity", true),
+            new EditorBuildSettingsScene("Assets/Scenes/Session3.unity", true),
             new EditorBuildSettingsScene("Assets/Scenes/Session4.unity", true)
         };
         EditorBuildSettings.scenes = scenes;

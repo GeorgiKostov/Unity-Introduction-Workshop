@@ -438,7 +438,7 @@ public class Session4Builder
         go.GetComponent<Collider>().isTrigger = true;
         SlowMotionZone zone = go.AddComponent<SlowMotionZone>();
         SerializedObject so = new SerializedObject(zone);
-        so.FindProperty("m_slowScale").floatValue = slowScale;
+        so.FindProperty("m_slowTimeScale").floatValue = slowScale;
         so.FindProperty("m_transitionSpeed").floatValue = transition;
         so.ApplyModifiedProperties();
         go.transform.SetParent(parent.transform);
@@ -521,7 +521,7 @@ public class Session4Builder
                 GameObject prefabObj = Object.Instantiate(c);
                 TimedDestroyer td = prefabObj.AddComponent<TimedDestroyer>();
                 SerializedObject soTd = new SerializedObject(td);
-                soTd.FindProperty("m_lifetime").floatValue = 20f;
+                soTd.FindProperty("m_lifetimeInSeconds").floatValue = 20f;
                 soTd.ApplyModifiedProperties();
                 PrefabUtility.SaveAsPrefabAsset(prefabObj, "Assets/Prefabs/Collectible_Common_Prefab.prefab");
                 Object.DestroyImmediate(prefabObj);
@@ -563,8 +563,8 @@ public class Session4Builder
         SerializedObject so = new SerializedObject(os);
         so.FindProperty("m_prefabToSpawn").objectReferenceValue = prefab;
         so.FindProperty("m_spawnInterval").floatValue = interval;
-        so.FindProperty("m_maxActive").intValue = max;
-        so.FindProperty("m_randomOffset").vector3Value = offset;
+        so.FindProperty("m_maxActiveCount").intValue = max;
+        so.FindProperty("m_randomPositionOffset").vector3Value = offset;
         so.ApplyModifiedProperties();
     }
 
@@ -595,7 +595,7 @@ public class Session4Builder
 
         ObjectRotator or = go.AddComponent<ObjectRotator>();
         SerializedObject soOr = new SerializedObject(or);
-        soOr.FindProperty("m_rotationSpeed").vector3Value = new Vector3(0, rotS, 0); // Assuming Y rotation based on previous instructions slightly generalized
+        soOr.FindProperty("m_rotationSpeedY").floatValue = rotS;
         soOr.ApplyModifiedProperties();
 
         if (pulseA.HasValue)
@@ -620,7 +620,7 @@ public class Session4Builder
         GameObject gameMgr = new GameObject("GameManager");
         CountdownTimer timer = gameMgr.AddComponent<CountdownTimer>();
         SerializedObject soTimer = new SerializedObject(timer);
-        soTimer.FindProperty("m_startTime").intValue = 90;
+        soTimer.FindProperty("m_startTime").floatValue = 90f;
         soTimer.ApplyModifiedProperties();
 
         WinCondition win = gameMgr.AddComponent<WinCondition>();
@@ -722,6 +722,15 @@ public class Session4Builder
         Button wMenu = CreateButton("WinMenuButton", wp, "MAIN MENU", Color.black, new Vector2(300, 70), new Vector2(0, -260));
         wp.SetActive(false);
 
+        // Exit Button (Top Left)
+        Button btnExit = CreateButton("ExitButton", canvasGo, "MAIN MENU", new Color(0.75f, 0.15f, 0.25f, 1f), new Vector2(200, 60), new Vector2(0, 0));
+        RectTransform rtExit = btnExit.GetComponent<RectTransform>();
+        rtExit.anchorMin = new Vector2(0f, 1f);
+        rtExit.anchorMax = new Vector2(0f, 1f);
+        rtExit.pivot = new Vector2(0f, 1f);
+        rtExit.anchoredPosition = new Vector2(20, -20);
+        btnExit.GetComponentInChildren<TextMeshProUGUI>().fontSize = 28;
+
         // Wiring Events
         UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.ScoreChanged, sd.UpdateScoreText); // Will fix method name later
         UnityEditor.Events.UnityEventTools.AddPersistentListener(timer.TimerExpired, delegate { gop.SetActive(true); });
@@ -733,6 +742,8 @@ public class Session4Builder
 
         UnityEditor.Events.UnityEventTools.AddPersistentListener(wRestart.onClick, loader.ReloadCurrentScene);
         UnityEditor.Events.UnityEventTools.AddIntPersistentListener(wMenu.onClick, loader.LoadSceneByIndex, 0);
+
+        UnityEditor.Events.UnityEventTools.AddIntPersistentListener(btnExit.onClick, loader.LoadSceneByIndex, 0);
     }
 
     private static GameObject CreatePanel(string name, GameObject parent, Color color)
