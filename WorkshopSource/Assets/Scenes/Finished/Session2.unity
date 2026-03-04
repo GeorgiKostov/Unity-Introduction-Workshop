@@ -312,6 +312,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2.Movement.PlayerJumper
   m_jumpForce: 7
+  m_fallMultiplier: 2.5
+  m_lowJumpMultiplier: 2
   m_groundCheckDistance: 1.1
   m_groundLayer:
     serializedVersion: 2
