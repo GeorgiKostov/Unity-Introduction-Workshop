@@ -9,6 +9,8 @@ TagManager:
   - Coin
   - Health
   - Enemy
+  - Player
+  - Destructible
   layers:
   - Default
   - TransparentFX
