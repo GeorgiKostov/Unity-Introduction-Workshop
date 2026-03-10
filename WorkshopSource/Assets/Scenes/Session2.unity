@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 16769403}
   - component: {fileID: 16769405}
   - component: {fileID: 16769404}
+  - component: {fileID: 16769406}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -266,6 +267,14 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!81 &16769406
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 16769401}
+  m_Enabled: 1
 --- !u!1 &48739679
 GameObject:
   m_ObjectHideFlags: 0
@@ -1134,6 +1143,7 @@ GameObject:
   m_Component:
   - component: {fileID: 819844588}
   - component: {fileID: 819844587}
+  - component: {fileID: 819844589}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -1221,6 +1231,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &819844589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 819844586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &941718578
 GameObject:
   m_ObjectHideFlags: 0
@@ -2606,7 +2645,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 341351067357c9c4c8ef6f8fa1cade7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.SoundTrigger
-  audioClip: {fileID: 0}
+  audioClip: {fileID: 8300000, guid: 8cf95e9f7efcdac46bcf9d6f730b0831, type: 3}
 --- !u!82 &1505035873
 AudioSource:
   m_ObjectHideFlags: 0
