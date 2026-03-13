@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Movement
+namespace WorkshopExamples.Movement
 {
     /// <summary>
     /// Moves the player along the X and Z axes using keyboard input.

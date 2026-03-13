@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Movement
+namespace WorkshopExamples.Movement
 {
     /// <summary>
     /// Allows the player to jump when pressing Space.

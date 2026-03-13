@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Movement
+namespace WorkshopExamples.Movement
 {
     /// <summary>
     /// Stores the player's spawn point and handles teleportation back to it.

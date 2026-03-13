@@ -1,4 +1,4 @@
-namespace Workshop
+namespace WorkshopExamples
 {
     /// <summary>
     /// Centralized constants for the workshop project.

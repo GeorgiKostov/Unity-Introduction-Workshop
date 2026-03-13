@@ -1,7 +1,6 @@
 using UnityEngine;
-using Workshop.Session3.Movement;
 
-namespace Workshop.Session2.Movement
+namespace WorkshopExamples.Movement
 {
     /// <summary>
     /// Temporarily multiplies the player's move speed when Left Shift is held.

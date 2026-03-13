@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Movement
+namespace WorkshopExamples.Movement
 {
     /// <summary>
     /// Moves the player relative to the camera's viewing angle.
@@ -23,7 +23,7 @@ namespace Workshop.Session3.Movement
         [SerializeField] private float m_rotationSpeed = 25f;
 
         private Rigidbody m_rigidbody;
-        private Camera m_mainCamera;
+        private UnityEngine.Camera m_mainCamera;
         private float m_horizontalInput;
         private float m_verticalInput;
         #endregion
@@ -41,7 +41,7 @@ namespace Workshop.Session3.Movement
         {
             m_rigidbody = GetComponent<Rigidbody>();
             m_rigidbody.freezeRotation = true;
-            m_mainCamera = Camera.main;
+            m_mainCamera = UnityEngine.Camera.main;
         }
 
         private void Update()
@@ -72,7 +72,7 @@ namespace Workshop.Session3.Movement
         {
             if (m_mainCamera == null)
             {
-                m_mainCamera = Camera.main;
+                m_mainCamera = UnityEngine.Camera.main;
                 if (m_mainCamera == null) return;
             }
 

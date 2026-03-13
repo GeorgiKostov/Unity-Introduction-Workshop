@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Camera
+namespace WorkshopExamples.Camera
 {
     /// <summary>
     /// Smoothly follows a target Transform at a fixed offset.

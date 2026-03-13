@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Camera
+namespace WorkshopExamples.Camera
 {
     /// <summary>
     /// Orbits around a target using right-click + mouse drag.
