@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.PlayerLoop;
 
 namespace Workshop.Session2_New
 {
@@ -12,18 +13,12 @@ namespace Workshop.Session2_New
 
         private void Start()
         {
-            if (scoreText == null)
-            {
-                Debug.LogWarning("ScoreDisplay: scoreText reference is missing. Ensure the Inspector field is assigned.");
-            }
+            ScoreManager.Instance.OnScoreChanged.AddListener(UpdateText);
         }
-
+        
         public void UpdateText(int newScore)
         {
-            if (scoreText != null)
-            {
-                scoreText.text = "Score: " + newScore;
-            }
+            scoreText.text = "Score: " + newScore;
         }
     }
 }
