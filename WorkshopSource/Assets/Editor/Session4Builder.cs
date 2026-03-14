@@ -1,855 +1,723 @@
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEditor.SceneManagement;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using TMPro;
 using UnityEngine.UI;
-
-using Workshop.Session2.Movement;
-using Workshop.Session2.Camera;
-using Workshop.Session2.Collectibles;
-
-using Workshop.Session3.Hazards;
-using Workshop.Session3.GameFlow;
-using Workshop.Session2.UI;
+using Workshop.Session2_New;
 using Workshop.Session3.Feedback;
+using Workshop.Session3.Platforms;
 
-using Workshop.Session4.Polish;
-using Workshop.Session4.Advanced;
-using Workshop.Session4.Spawning;
-
+/// <summary>
+/// Builds the Session 4 showcase scene: Rendering, Materials, Lighting and Baking.
+/// Expands the Session 3 platformer layout with:
+///   - Procedural skybox (warm key / cool ambient contrast)
+///   - Global Volume: Bloom, Tonemapping ACES, ColorAdjustments, Vignette
+///   - Material variety demo: Lit/Unlit/Transparent, metallic/smoothness grid
+///   - Emissive trims and collectibles (Bloom teaching target)
+///   - Static flags on environment for lightmap baking
+///   - Light Probe group (8 probes at floor level)
+///   - Reflection Probe (center of arena)
+///   - Point lights as children of collectibles (no shadows)
+///   - Particle burst prefabs for collection effect
+///   - All Session 3 gameplay intact (player, score, platforms, hazards)
+///
+/// Run via Workshop > Build Session 4.
+/// </summary>
 public class Session4Builder
 {
     [MenuItem("Workshop/Build Session 4")]
     public static void Build()
     {
-        Scene newScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-        bool success = EditorSceneManager.SaveScene(newScene, "Assets/Scenes/Session4.unity");
-        if (!success)
+        var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+        if (!EditorSceneManager.SaveScene(scene, "Assets/Scenes/Session4.unity"))
         {
-            Debug.LogError("Failed to save Assets/Scenes/Session4.unity. Ensure the folder exists.");
+            Debug.LogError("Session4Builder: Failed to save scene — ensure Assets/Scenes/ exists.");
             return;
         }
 
+        SetupTagsAndLayers();
         BuildSkyboxAndLighting();
         BuildPostProcessing();
         BuildMaterials();
         BuildEnvironment();
-        BuildPlayerAndCamera();
-        BuildHazards();
+        var spawnTf = BuildSpawnPoint();
+        BuildPlayer(spawnTf);
+        BuildPlatformSection();
+        BuildHazardSection();
         BuildCollectibles();
-        BuildManagersAndUI();
-        BuildAudio();
+        BuildLightProbes();
+        BuildReflectionProbe();
+        BuildMaterialShowcase();
+        BuildScoreUI();
 
         EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), "Assets/Scenes/Session4.unity");
-        Debug.Log("Session 4 built successfully!");
+        Debug.Log("[Session4] Build complete. Assign audio clips to SoundTrigger zones. Bake lighting via Window > Rendering > Lighting > Generate Lighting.");
     }
 
-    private static void BuildSkyboxAndLighting()
-    {
-        Material skyboxMat = new Material(Shader.Find("Skybox/Procedural"));
-        skyboxMat.SetColor("_SkyTint", new Color(0.4f, 0.6f, 0.9f));
-        skyboxMat.SetFloat("_AtmosphereThickness", 1.2f);
-        skyboxMat.SetColor("_GroundColor", new Color(0.15f, 0.12f, 0.10f));
-        skyboxMat.SetFloat("_Exposure", 1.1f);
-        RenderSettings.skybox = skyboxMat;
+    // ── TAGS & LAYERS ────────────────────────────────────────────────────────
 
-        GameObject sun = new GameObject("Sun");
-        Light light = sun.AddComponent<Light>();
-        light.type = LightType.Directional;
-        sun.transform.rotation = Quaternion.Euler(52, -35, 0);
-        light.color = new Color(1.0f, 0.92f, 0.78f);
-        light.intensity = 1.6f;
-        light.shadows = LightShadows.Soft;
-        light.shadowStrength = 0.75f;
-        light.shadowResolution = LightShadowResolution.High;
-        RenderSettings.sun = light;
+    static void SetupTagsAndLayers()
+    {
+        var tm = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+        var tags = tm.FindProperty("tags");
+        EnsureTag(tags, "Player");
+        var layers = tm.FindProperty("layers");
+        EnsureLayer(layers, "Ground");
+        tm.ApplyModifiedProperties();
     }
-
-    private static void BuildPostProcessing()
+    static void EnsureTag(SerializedProperty tags, string t)
     {
-        if (!AssetDatabase.IsValidFolder("Assets/Settings"))
+        for (int i = 0; i < tags.arraySize; i++) if (tags.GetArrayElementAtIndex(i).stringValue == t) return;
+        tags.InsertArrayElementAtIndex(tags.arraySize);
+        tags.GetArrayElementAtIndex(tags.arraySize - 1).stringValue = t;
+    }
+    static void EnsureLayer(SerializedProperty layers, string name)
+    {
+        for (int i = 8; i < layers.arraySize; i++)
         {
-            AssetDatabase.CreateFolder("Assets", "Settings");
+            var sp = layers.GetArrayElementAtIndex(i);
+            if (sp.stringValue == name) return;
+            if (sp.stringValue == "") { sp.stringValue = name; return; }
         }
+    }
 
-        GameObject ppVol = new GameObject("PostProcessing_Volume");
-        ppVol.transform.position = Vector3.zero;
-        Volume vol = ppVol.AddComponent<Volume>();
+    // ── SKYBOX & DIRECTIONAL LIGHT ───────────────────────────────────────────
+    // Session 4 teaching: warm key + cool ambient separation.
+
+    static void BuildSkyboxAndLighting()
+    {
+        // Procedural skybox — students will swap for HDRI from polyhaven.com
+        var skyMat = new Material(Shader.Find("Skybox/Procedural"));
+        skyMat.SetColor("_SkyTint",   new Color(0.38f, 0.52f, 0.80f));
+        skyMat.SetColor("_GroundColor", new Color(0.14f, 0.12f, 0.10f));
+        skyMat.SetFloat("_AtmosphereThickness", 1.15f);
+        skyMat.SetFloat("_SunSize", 0.04f);
+        skyMat.SetFloat("_Exposure", 1.05f);
+        AssetDatabase.CreateAsset(skyMat, EnsureFolder("Assets/Materials/Session4") + "/Mat_Skybox_Procedural.mat");
+        RenderSettings.skybox = skyMat;
+
+        // Directional light — warm, Mixed mode for baking demo
+        var sunGo = new GameObject("Sun_Directional");
+        var sun   = sunGo.AddComponent<Light>();
+        sun.type       = LightType.Directional;
+        sun.lightmapBakeType = LightmapBakeType.Mixed;
+        sunGo.transform.rotation = Quaternion.Euler(50, -30, 0);
+        sun.color      = new Color(1.0f, 0.95f, 0.82f);   // warm yellow
+        sun.intensity  = 1.3f;
+        sun.shadows    = LightShadows.Soft;
+        sun.shadowStrength    = 0.70f;
+        sun.shadowResolution  = LightShadowResolution.Medium;
+        RenderSettings.sun    = sun;
+
+        // Cool blue-grey ambient — contrast with warm key is the teaching moment
+        RenderSettings.ambientMode  = AmbientMode.Flat;
+        RenderSettings.ambientLight = new Color(0.10f, 0.12f, 0.22f);
+    }
+
+    // ── POST PROCESSING ──────────────────────────────────────────────────────
+    // Bloom needs HDR on in the URP Asset AND Emission Intensity > 1 on materials.
+
+    static void BuildPostProcessing()
+    {
+        EnsureFolder("Assets/Settings");
+
+        var ppGo = new GameObject("GlobalVolume_PostProcess");
+        var vol  = ppGo.AddComponent<Volume>();
         vol.isGlobal = true;
-        vol.priority = 1;
+        vol.priority = 10;
 
-        VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
+        var profile = ScriptableObject.CreateInstance<VolumeProfile>();
         AssetDatabase.CreateAsset(profile, "Assets/Settings/S4_PostProcessProfile.asset");
 
-        Bloom bloom = profile.Add<Bloom>();
+        // Bloom — threshold 1.0 so only HDR emissive pixels glow
+        var bloom = profile.Add<Bloom>();
         bloom.active = true;
-        bloom.threshold.Override(0.9f);
-        bloom.intensity.Override(0.8f);
-        bloom.scatter.Override(0.7f);
-        bloom.tint.Override(new Color(1.0f, 0.95f, 0.85f));
+        bloom.threshold.Override(1.0f);
+        bloom.intensity.Override(0.6f);
+        bloom.scatter.Override(0.70f);
+        bloom.tint.Override(new Color(1.0f, 0.96f, 0.88f));
 
-        ColorAdjustments ca = profile.Add<ColorAdjustments>();
+        // Tonemapping ACES — maps HDR to display range with film-like curve
+        var tm = profile.Add<Tonemapping>();
+        tm.active = true;
+        tm.mode.Override(TonemappingMode.ACES);
+
+        // Color grading — slight warmth, +10 contrast, +15 saturation
+        var ca = profile.Add<ColorAdjustments>();
         ca.active = true;
         ca.postExposure.Override(0.2f);
-        ca.contrast.Override(12f);
-        ca.colorFilter.Override(new Color(1.0f, 0.97f, 0.93f));
+        ca.contrast.Override(10f);
+        ca.colorFilter.Override(new Color(1.0f, 0.97f, 0.94f));
         ca.saturation.Override(15f);
 
-        Vignette vignette = profile.Add<Vignette>();
-        vignette.active = true;
-        vignette.color.Override(Color.black);
-        vignette.intensity.Override(0.28f);
-        vignette.smoothness.Override(0.4f);
-        vignette.rounded.Override(true);
-
-        DepthOfField dof = profile.Add<DepthOfField>();
-        dof.active = true;
-        dof.mode.Override(DepthOfFieldMode.Bokeh);
-        dof.focusDistance.Override(12f);
-        dof.aperture.Override(5.6f);
-        dof.focalLength.Override(50f);
+        // Vignette — draws eye to centre of arena
+        var vig = profile.Add<Vignette>();
+        vig.active = true;
+        vig.color.Override(Color.black);
+        vig.intensity.Override(0.25f);
+        vig.smoothness.Override(0.40f);
+        vig.rounded.Override(true);
 
         vol.profile = profile;
         AssetDatabase.SaveAssets();
+
+        // Camera: enable post processing
+        var camGo = new GameObject("Main Camera");
+        camGo.tag = "MainCamera";
+        camGo.AddComponent<Camera>();
+        camGo.AddComponent<AudioListener>();
+        camGo.transform.position = new Vector3(0, 10, 30);
+        camGo.transform.rotation = Quaternion.Euler(18, 180, 0);
+        var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
+        camData.renderPostProcessing = true;
+        // Player will be added later; store ref for camera follow wiring
+        _cameraGo = camGo;
     }
+    static GameObject _cameraGo;
 
-    private static void BuildMaterials()
+    // ── MATERIALS ────────────────────────────────────────────────────────────
+
+    static void BuildMaterials()
     {
-        if (!AssetDatabase.IsValidFolder("Assets/Materials")) AssetDatabase.CreateFolder("Assets", "Materials");
-        if (!AssetDatabase.IsValidFolder("Assets/Materials/Session4")) AssetDatabase.CreateFolder("Assets/Materials", "Session4");
+        var f = EnsureFolder("Assets/Materials/Session4");
 
-        CreateMat("Mat_Floor", new Color(0.14f, 0.14f, 0.16f), 0.05f, 0.6f);
-        CreateMat("Mat_Floor_Grid", new Color(0.10f, 0.10f, 0.12f), 0f, 0f, new Color(0.0f, 0.3f, 0.6f) * 0.4f);
-        CreateMat("Mat_Wall", new Color(0.08f, 0.07f, 0.15f), 0.1f, 0.2f);
-        CreateMat("Mat_Wall_Trim", new Color(0.2f, 0.15f, 0.4f), 0f, 0f, new Color(0.3f, 0.1f, 0.8f) * 0.6f);
-        CreateMat("Mat_Platform_Low", new Color(0.2f, 0.3f, 0.5f), 0.2f, 0.45f);
-        CreateMat("Mat_Platform_Mid", new Color(0.3f, 0.2f, 0.5f), 0.25f, 0.55f, new Color(0.2f, 0.05f, 0.5f) * 0.3f);
-        CreateMat("Mat_Platform_High", new Color(0.5f, 0.3f, 0.1f), 0.5f, 0.7f, new Color(0.8f, 0.4f, 0.0f) * 0.4f);
-        CreateMat("Mat_Ramp", new Color(0.25f, 0.25f, 0.28f), 0.1f, 0.25f);
-        CreateMat("Mat_MovingPlatform", new Color(0.1f, 0.6f, 0.45f), 0.3f, 0.6f, new Color(0.0f, 0.8f, 0.5f) * 0.5f);
-        CreateMat("Mat_Hazard", new Color(0.8f, 0.15f, 0.0f), 0f, 0f, new Color(1.0f, 0.3f, 0.0f) * 1.2f);
-        CreateMat("Mat_SwingBar", new Color(0.7f, 0.4f, 0.0f), 0.6f, 0.7f);
-        CreateMat("Mat_Player", new Color(0.0f, 0.9f, 0.5f), 0.2f, 0.7f, new Color(0.0f, 0.5f, 0.3f) * 0.3f);
-        CreateMat("Mat_Collectible_Common", new Color(1.0f, 0.85f, 0.0f), 1.0f, 1.0f, new Color(1.0f, 0.7f, 0.0f) * 0.8f);
-        CreateMat("Mat_Collectible_Rare", new Color(0.0f, 0.8f, 1.0f), 1.0f, 1.0f, new Color(0.0f, 0.6f, 1.0f) * 1.0f);
-        CreateMat("Mat_Collectible_Bonus", new Color(1.0f, 0.2f, 0.9f), 1.0f, 1.0f, new Color(1.0f, 0.0f, 0.8f) * 1.2f);
-        CreateMat("Mat_Pillar", new Color(0.18f, 0.15f, 0.3f), 0.3f, 0.4f);
-        
-        // Slow zone material
-        Material slowMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        slowMat.SetFloat("_Surface", 1); // Transparent
-        slowMat.SetOverrideTag("RenderType", "Transparent");
-        slowMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        slowMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        slowMat.SetInt("_ZWrite", 0);
-        slowMat.DisableKeyword("_ALPHATEST_ON");
-        slowMat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-        slowMat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-        slowMat.SetColor("_BaseColor", new Color(0.3f, 0.3f, 1.0f, 0.25f));
-        AssetDatabase.CreateAsset(slowMat, "Assets/Materials/Session4/Mat_SlowZone.mat");
+        // Environment — Lit, PBR
+        CreateMat("Mat_Floor",       new Color(0.16f, 0.16f, 0.18f), 0.05f, 0.55f);
+        CreateMat("Mat_Wall",        new Color(0.10f, 0.09f, 0.20f), 0.10f, 0.20f);
+        CreateMat("Mat_SpawnPad",    new Color(0.15f, 0.80f, 0.30f), 0.00f, 0.50f,
+                                     new Color(0.04f, 0.50f, 0.10f) * 0.40f);
 
+        // Emissive trims — teaching target for Bloom
+        CreateMat("Mat_Trim_Purple", new Color(0.20f, 0.10f, 0.50f), 0.10f, 0.30f,
+                                     new Color(0.40f, 0.10f, 1.00f) * 1.5f);
+        CreateMat("Mat_Trim_Cyan",   new Color(0.05f, 0.40f, 0.60f), 0.10f, 0.30f,
+                                     new Color(0.00f, 0.80f, 1.00f) * 1.5f);
+
+        // Platforms — three tiers
+        CreateMat("Mat_Platform_A",  new Color(0.22f, 0.33f, 0.58f), 0.15f, 0.50f);
+        CreateMat("Mat_Platform_B",  new Color(0.36f, 0.20f, 0.58f), 0.20f, 0.55f,
+                                     new Color(0.20f, 0.05f, 0.50f) * 0.25f);
+        CreateMat("Mat_Platform_C",  new Color(0.58f, 0.30f, 0.10f), 0.30f, 0.65f,
+                                     new Color(0.80f, 0.40f, 0.00f) * 0.30f);
+
+        // Moving platforms
+        CreateMat("Mat_PlatformH",   new Color(0.12f, 0.68f, 0.48f), 0.20f, 0.60f,
+                                     new Color(0.00f, 0.40f, 0.25f) * 0.20f);
+        CreateMat("Mat_PlatformV",   new Color(0.68f, 0.42f, 0.08f), 0.20f, 0.60f,
+                                     new Color(0.50f, 0.28f, 0.00f) * 0.20f);
+
+        // Hazards — red emissive, visible even if Directional Light off
+        CreateMat("Mat_Hazard",      new Color(0.92f, 0.14f, 0.04f), 0.00f, 0.10f,
+                                     new Color(1.00f, 0.30f, 0.00f) * 1.2f);
+
+        // Collectibles — Unlit + Emission; these are the Bloom demo targets
+        CreateMat("Mat_Coin_Common", new Color(1.00f, 0.85f, 0.00f), 0.90f, 1.00f,
+                                     new Color(1.00f, 0.72f, 0.00f) * 1.4f);
+        CreateMat("Mat_Coin_Rare",   new Color(0.00f, 0.85f, 1.00f), 0.92f, 1.00f,
+                                     new Color(0.00f, 0.60f, 1.00f) * 1.4f);
+        CreateMat("Mat_Coin_Bonus",  new Color(1.00f, 0.18f, 0.85f), 0.95f, 1.00f,
+                                     new Color(1.00f, 0.00f, 0.70f) * 1.6f);
+
+        // Player
+        CreateMat("Mat_Player",      new Color(0.00f, 0.86f, 0.50f), 0.20f, 0.70f,
+                                     new Color(0.00f, 0.40f, 0.20f) * 0.20f);
+
+        // Physics material — zero friction
+        string pmPath = f + "/PhysicsMat_Player.physicMaterial";
+        if (AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(pmPath) == null)
+        {
+            var pm = new PhysicsMaterial("PhysicsMat_Player")
+            { staticFriction = 0, dynamicFriction = 0, bounciness = 0,
+              frictionCombine = PhysicsMaterialCombine.Minimum,
+              bounceCombine   = PhysicsMaterialCombine.Minimum };
+            AssetDatabase.CreateAsset(pm, pmPath);
+        }
         AssetDatabase.SaveAssets();
     }
 
-    private static Material CreateMat(string name, Color baseColor, float metallic, float smoothness, Color? emission = null)
+    static Material CreateMat(string name, Color col, float met, float smo, Color? emi = null)
     {
-        Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-        mat.SetColor("_BaseColor", baseColor);
-        mat.SetFloat("_Metallic", metallic);
-        mat.SetFloat("_Smoothness", smoothness);
-        if (emission.HasValue)
+        string path = $"Assets/Materials/Session4/{name}.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m != null) return m;
+        m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        m.SetColor("_BaseColor", col);
+        m.SetFloat("_Metallic",   met);
+        m.SetFloat("_Smoothness", smo);
+        if (emi.HasValue)
         {
-            mat.EnableKeyword("_EMISSION");
-            mat.SetColor("_EmissionColor", emission.Value);
-            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            m.EnableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", emi.Value);
+            m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
         }
-        AssetDatabase.CreateAsset(mat, $"Assets/Materials/Session4/{name}.mat");
-        return mat;
+        AssetDatabase.CreateAsset(m, path);
+        return m;
     }
+    static Material GetMat(string name) =>
+        AssetDatabase.LoadAssetAtPath<Material>($"Assets/Materials/Session4/{name}.mat");
 
-    private static Material GetMat(string name)
+    // ── ENVIRONMENT ──────────────────────────────────────────────────────────
+    // Static flags on floor/walls/platforms so students can bake lightmaps.
+
+    static void BuildEnvironment()
     {
-        return AssetDatabase.LoadAssetAtPath<Material>($"Assets/Materials/Session4/{name}.mat");
-    }
+        int gLayer = LayerMask.NameToLayer("Ground");
+        var arena  = new GameObject("Arena");
 
-    private static void BuildEnvironment()
-    {
-        GameObject arena = new GameObject("Arena");
-
-        // Floor
-        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        floor.name = "Floor";
-        floor.transform.position = Vector3.zero;
-        floor.transform.localScale = new Vector3(6, 1, 6);
-        floor.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_Floor");
-        floor.transform.SetParent(arena.transform);
-
-        GameObject floorGrid = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        floorGrid.name = "Floor_Grid";
-        floorGrid.transform.position = new Vector3(0, 0.01f, 0);
-        floorGrid.transform.localScale = new Vector3(6, 1, 6);
-        floorGrid.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_Floor_Grid");
-        Object.DestroyImmediate(floorGrid.GetComponent<Collider>());
-        floorGrid.transform.SetParent(arena.transform);
+        // Floor — Static for GI baking
+        var floor = Cube("Floor", new Vector3(0, -0.25f, 0), new Vector3(6, 0.5f, 6), arena, GetMat("Mat_Floor"));
+        floor.layer = gLayer;
+        GameObjectUtility.SetStaticEditorFlags(floor, StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic);
 
         // Walls
-        GameObject walls = new GameObject("Walls");
-        walls.transform.SetParent(arena.transform);
-        CreateCube("Wall_North", new Vector3(0, 5, 30), new Vector3(60, 10, 1), walls, GetMat("Mat_Wall"));
-        CreateCube("Wall_South", new Vector3(0, 5, -30), new Vector3(60, 10, 1), walls, GetMat("Mat_Wall"));
-        CreateCube("Wall_East", new Vector3(30, 5, 0), new Vector3(1, 10, 60), walls, GetMat("Mat_Wall"));
-        CreateCube("Wall_West", new Vector3(-30, 5, 0), new Vector3(1, 10, 60), walls, GetMat("Mat_Wall"));
+        var walls = Child("Walls", arena);
+        foreach (var (n, p, s) in new[]{
+            ("Wall_North", new Vector3(0,3,-32), new Vector3(56,6,1)),
+            ("Wall_South", new Vector3(0,3, 28), new Vector3(56,6,1)),
+            ("Wall_East",  new Vector3(28,3,-2), new Vector3(1,6,62)),
+            ("Wall_West",  new Vector3(-28,3,-2),new Vector3(1,6,62)) })
+        {
+            var w = Cube(n, p, s, walls, GetMat("Mat_Wall"));
+            w.layer = gLayer;
+            GameObjectUtility.SetStaticEditorFlags(w, StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic);
+        }
 
-        // Trims
-        GameObject trims = new GameObject("Trims");
-        trims.transform.SetParent(walls.transform);
-        CreateTrim("Trim_North", new Vector3(0, 10.1f, 30), new Vector3(60, 0.2f, 1.1f), trims);
-        CreateTrim("Trim_South", new Vector3(0, 10.1f, -30), new Vector3(60, 0.2f, 1.1f), trims);
-        CreateTrim("Trim_East", new Vector3(30, 10.1f, 0), new Vector3(1.1f, 0.2f, 60), trims);
-        CreateTrim("Trim_West", new Vector3(-30, 10.1f, 0), new Vector3(1.1f, 0.2f, 60), trims);
+        // Emissive wall trims — Bloom teaching targets (not Static so they show realtime emission)
+        var trims = Child("Trims", walls);
+        TrimStrip("Trim_N", new Vector3(0, 6.1f,-32), new Vector3(56,0.3f,1.2f), "Mat_Trim_Purple", trims);
+        TrimStrip("Trim_S", new Vector3(0, 6.1f, 28), new Vector3(56,0.3f,1.2f), "Mat_Trim_Purple", trims);
+        TrimStrip("Trim_E", new Vector3(28,6.1f,-2 ), new Vector3(1.2f,0.3f,62), "Mat_Trim_Cyan",   trims);
+        TrimStrip("Trim_W", new Vector3(-28,6.1f,-2), new Vector3(1.2f,0.3f,62), "Mat_Trim_Cyan",   trims);
 
-        // Tiers
-        GameObject tier1 = new GameObject("Tier1_Platforms");
-        tier1.transform.SetParent(arena.transform);
-        CreateCube("Plat_L1_A", new Vector3(10, 0.5f, 10), new Vector3(8, 1, 8), tier1, GetMat("Mat_Platform_Low"));
-        CreateCube("Plat_L1_B", new Vector3(-12, 0.5f, 8), new Vector3(6, 1, 10), tier1, GetMat("Mat_Platform_Low"));
-        CreateCube("Plat_L1_C", new Vector3(0, 0.5f, -15), new Vector3(10, 1, 6), tier1, GetMat("Mat_Platform_Low"));
-        CreateCube("Plat_L1_D", new Vector3(16, 0.5f, -8), new Vector3(5, 1, 5), tier1, GetMat("Mat_Platform_Low"));
+        // Platforms — Static for baking
+        var t1 = Child("Tier1_Platforms", arena);
+        StaticPlatform("T1_Left",   new Vector3(-10,0.5f,-6), new Vector3(7,1,5), "Mat_Platform_A", gLayer, t1);
+        StaticPlatform("T1_Center", new Vector3(  0,0.5f,-8), new Vector3(8,1,6), "Mat_Platform_A", gLayer, t1);
+        StaticPlatform("T1_Right",  new Vector3( 10,0.5f,-6), new Vector3(7,1,5), "Mat_Platform_A", gLayer, t1);
+        StaticPlatform("T1_StepL",  new Vector3( -5,0.5f,-10),new Vector3(3,1,3), "Mat_Platform_A", gLayer, t1);
+        StaticPlatform("T1_StepR",  new Vector3(  5,0.5f,-10),new Vector3(3,1,3), "Mat_Platform_A", gLayer, t1);
 
-        GameObject tier2 = new GameObject("Tier2_Platforms");
-        tier2.transform.SetParent(arena.transform);
-        CreateCube("Plat_L2_A", new Vector3(-10, 4.5f, -4), new Vector3(8, 1, 8), tier2, GetMat("Mat_Platform_Mid"));
-        CreateCube("Plat_L2_B", new Vector3(6, 4.5f, -6), new Vector3(7, 1, 7), tier2, GetMat("Mat_Platform_Mid"));
-        CreateCube("Plat_L2_C", new Vector3(-18, 4.5f, -10), new Vector3(5, 1, 5), tier2, GetMat("Mat_Platform_Mid"));
-        CreateCube("Plat_L2_D", new Vector3(-12, 4.5f, -8), new Vector3(3, 1, 3), tier2, GetMat("Mat_Platform_Mid"));
+        var t2 = Child("Tier2_Platforms", arena);
+        StaticPlatform("T2_Left",   new Vector3(-12,3.5f,-15),new Vector3(6,1,5), "Mat_Platform_B", gLayer, t2);
+        StaticPlatform("T2_Center", new Vector3(  0,3.5f,-17),new Vector3(7,1,6), "Mat_Platform_B", gLayer, t2);
+        StaticPlatform("T2_Right",  new Vector3( 12,3.5f,-15),new Vector3(6,1,5), "Mat_Platform_B", gLayer, t2);
 
-        GameObject tier3 = new GameObject("Tier3_Platforms");
-        tier3.transform.SetParent(arena.transform);
-        CreateCube("Plat_L3_A", new Vector3(0, 9.5f, -20), new Vector3(10, 1, 8), tier3, GetMat("Mat_Platform_High"));
-        CreateCube("Plat_L3_B", new Vector3(12, 9.5f, -18), new Vector3(5, 1, 5), tier3, GetMat("Mat_Platform_High"));
-        CreateCube("Plat_L3_C", new Vector3(-12, 9.5f, -18), new Vector3(5, 1, 5), tier3, GetMat("Mat_Platform_High"));
-
-        // Ramps
-        GameObject ramps = new GameObject("Ramps");
-        ramps.transform.SetParent(arena.transform);
-        CreateCube("Ramp_A", new Vector3(-8, 2, 2), new Vector3(4, 0.5f, 8), ramps, GetMat("Mat_Ramp")).transform.rotation = Quaternion.Euler(25, 0, 0);
-        CreateCube("Ramp_B", new Vector3(14, 2.5f, 0), new Vector3(4, 0.5f, 10), ramps, GetMat("Mat_Ramp")).transform.rotation = Quaternion.Euler(25, 0, 0);
-        CreateCube("Ramp_C", new Vector3(0, 6, -10), new Vector3(5, 0.5f, 8), ramps, GetMat("Mat_Ramp")).transform.rotation = Quaternion.Euler(30, 0, 0);
-
-        // Pillars
-        GameObject pillars = new GameObject("Pillars");
-        pillars.transform.SetParent(arena.transform);
-        CreatePillar("Pillar_01", new Vector3(6, 2, 6), pillars);
-        CreatePillar("Pillar_02", new Vector3(-6, 2, 6), pillars);
-        CreatePillar("Pillar_03", new Vector3(6, 2, -2), pillars);
-        CreatePillar("Pillar_04", new Vector3(-6, 2, -2), pillars);
-        CreatePillar("Pillar_05", new Vector3(14, 2, 12), pillars);
-        CreatePillar("Pillar_06", new Vector3(-14, 2, 12), pillars);
-
-        // Extra B - Welcome Gate
-        GameObject gate = new GameObject("Gate");
-        gate.transform.position = new Vector3(0, 0, 24);
-        gate.transform.SetParent(arena.transform);
-
-        CreateCube("Gate_PillarLeft", new Vector3(-3, 3, 24), new Vector3(1, 6, 1), gate, GetMat("Mat_Pillar"));
-        CreateCube("Gate_PillarRight", new Vector3(3, 3, 24), new Vector3(1, 6, 1), gate, GetMat("Mat_Pillar"));
-
-        GameObject gateBeam = CreateCube("Gate_Beam", new Vector3(0, 6.5f, 24), new Vector3(7, 0.5f, 1), gate, GetMat("Mat_Wall_Trim"));
-        ColorPulse beamPulse = gateBeam.AddComponent<ColorPulse>();
-        SerializedObject soBeamPulse = new SerializedObject(beamPulse);
-        soBeamPulse.FindProperty("m_colorA").colorValue = new Color(0.3f, 0.1f, 0.8f);
-        soBeamPulse.FindProperty("m_colorB").colorValue = new Color(0.0f, 0.6f, 1.0f);
-        soBeamPulse.FindProperty("m_pulseSpeed").floatValue = 1.5f;
-        soBeamPulse.ApplyModifiedProperties();
-
-        // Extra D - Checkpoint
-        Material cpMat = CreateMat("Mat_Checkpoint", new Color(0.3f, 1.0f, 0.3f), 0.2f, 0.5f, new Color(0.1f, 0.8f, 0.1f) * 0.5f);
-        GameObject cp = CreateCube("Checkpoint_Tier2", new Vector3(-8, 3, -1), new Vector3(3, 6, 3), GameObject.Find("Tier2_Platforms"), cpMat);
-        cp.GetComponent<Collider>().isTrigger = true;
-        cp.AddComponent<Workshop.Session4.Advanced.CheckpointZone>();
+        var t3 = Child("Tier3_Platforms", arena);
+        StaticPlatform("T3_Left",   new Vector3( -8,7.5f,-23),new Vector3(5,1,4), "Mat_Platform_C", gLayer, t3);
+        StaticPlatform("T3_Center", new Vector3(  0,7.5f,-26),new Vector3(8,1,5), "Mat_Platform_C", gLayer, t3);
+        StaticPlatform("T3_Right",  new Vector3(  8,7.5f,-23),new Vector3(5,1,4), "Mat_Platform_C", gLayer, t3);
     }
 
-    private static void CreateTrim(string name, Vector3 pos, Vector3 scale, GameObject parent)
+    static void TrimStrip(string name, Vector3 pos, Vector3 scale, string mat, GameObject parent)
     {
-        GameObject go = CreateCube(name, pos, scale, parent, GetMat("Mat_Wall_Trim"));
+        var go = Cube(name, pos, scale, parent, GetMat(mat));
         Object.DestroyImmediate(go.GetComponent<Collider>());
     }
 
-    private static void CreatePillar(string name, Vector3 pos, GameObject parent)
+    static void StaticPlatform(string name, Vector3 pos, Vector3 scale, string mat, int layer, GameObject parent)
     {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        go.name = name;
-        go.transform.position = pos;
-        go.transform.localScale = new Vector3(0.6f, 4f, 0.6f);
-        go.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_Pillar");
-        go.GetComponent<Collider>().isTrigger = false;
-        go.transform.SetParent(parent.transform);
+        var go = Cube(name, pos, scale, parent, GetMat(mat));
+        go.layer = layer;
+        GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic);
     }
 
-    private static GameObject CreateCube(string name, Vector3 pos, Vector3 scale, GameObject parent, Material mat)
+    // ── SPAWN POINT ──────────────────────────────────────────────────────────
+
+    static Transform BuildSpawnPoint()
     {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        go.transform.localScale = scale;
-        if (mat != null) go.GetComponent<MeshRenderer>().sharedMaterial = mat;
-        go.transform.SetParent(parent.transform);
-        return go;
+        var pad = Cube("SpawnPad", new Vector3(0, 0.15f, 22), new Vector3(4, 0.3f, 4), null, GetMat("Mat_SpawnPad"));
+        pad.layer = LayerMask.NameToLayer("Ground");
+        GameObjectUtility.SetStaticEditorFlags(pad, StaticEditorFlags.ContributeGI);
+        var sp = new GameObject("SpawnPoint");
+        sp.transform.position = new Vector3(0, 1.5f, 22);
+        return sp.transform;
     }
 
-    private static void BuildPlayerAndCamera()
-    {
-        GameObject spawn = new GameObject("SpawnPoint");
-        spawn.transform.position = new Vector3(0, 1.5f, 22);
+    // ── PLAYER ───────────────────────────────────────────────────────────────
 
-        GameObject player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+    static void BuildPlayer(Transform spawnTf)
+    {
+        var player = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         player.name = "Player";
-        player.tag = "Player";
-        player.transform.position = new Vector3(0, 1.5f, 22);
+        player.tag  = "Player";
+        player.transform.position = spawnTf.position;
         player.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_Player");
 
-        Rigidbody rb = player.AddComponent<Rigidbody>();
-        rb.mass = 1;
-        rb.linearDamping = 0;
-        rb.angularDamping = 0.05f;
-        rb.useGravity = true;
-        rb.isKinematic = false;
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        var rb = player.AddComponent<Rigidbody>();
+        rb.useGravity  = true;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        CapsuleCollider cc = player.GetComponent<CapsuleCollider>();
-        cc.isTrigger = false;
-        cc.radius = 0.5f;
-        cc.height = 2f;
-        cc.direction = 1;
+        var cc = player.GetComponent<CapsuleCollider>();
+        cc.material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>("Assets/Materials/Session4/PhysicsMat_Player.physicMaterial");
 
-        Workshop.Session3.Movement.PlayerOrbitalMover mover = player.AddComponent<Workshop.Session3.Movement.PlayerOrbitalMover>();
-        mover.MoveSpeed = 7f;
+        var mover = player.AddComponent<PlayerMover>();
+        Sp(mover, ("cameraTransform", (Object)_cameraGo.transform), ("moveSpeed", 6f));
 
-        PlayerJumper jumper = player.AddComponent<PlayerJumper>();
-        SerializedObject soJumper = new SerializedObject(jumper);
-        soJumper.FindProperty("m_jumpForce").floatValue = 8f;
-        soJumper.FindProperty("m_groundCheckDistance").floatValue = 1.15f;
-        soJumper.FindProperty("m_groundLayer").intValue = LayerMask.GetMask("Default");
-        soJumper.ApplyModifiedProperties();
+        var jumper = player.AddComponent<PlayerJumper>();
+        Sp(jumper, ("jumpForce", 7f), ("groundCheckDistance", 1.15f),
+                   ("groundCheckRadius", 0.45f), ("groundLayer", (object)LayerMask.GetMask("Ground")));
 
-        PlayerSlider slider = player.AddComponent<PlayerSlider>();
-        SerializedObject soSlider = new SerializedObject(slider);
-        soSlider.FindProperty("m_slideSpeedMultiplier").floatValue = 2.2f;
-        soSlider.FindProperty("m_slideDuration").floatValue = 0.7f;
-        soSlider.FindProperty("m_slideCooldown").floatValue = 1.2f;
-        soSlider.ApplyModifiedProperties();
+        var resp = player.AddComponent<PlayerRespawner>();
+        Sp(resp, ("spawnPoint", (Object)spawnTf), ("fallThreshold", -10f));
 
-        PlayerRespawner respawner = player.AddComponent<PlayerRespawner>();
-        SerializedObject soRespawner = new SerializedObject(respawner);
-        soRespawner.FindProperty("m_spawnPoint").objectReferenceValue = spawn.transform;
-        soRespawner.FindProperty("m_respawnDelay").floatValue = 0.4f;
-        soRespawner.ApplyModifiedProperties();
+        // Session 4 keeps the camera at a fixed angle overlooking the arena.
+        // Camera scripting was covered in Session 3 — the focus here is lighting
+        // and rendering, not movement systems. Students wanting orbital camera
+        // can copy CameraOrbiter from their Session 3 scene.
+        _cameraGo.transform.position = new Vector3(0, 14, 32);
+        _cameraGo.transform.rotation = Quaternion.Euler(22, 180, 0);
 
-        Camera mainCam = Camera.main;
-        if (mainCam == null)
-        {
-            GameObject camObj = new GameObject("Main Camera");
-            camObj.tag = "MainCamera";
-            mainCam = camObj.AddComponent<Camera>();
-        }
-        mainCam.transform.position = new Vector3(0, 6, 18);
-        mainCam.transform.rotation = Quaternion.Euler(15, 180, 0);
-        UniversalAdditionalCameraData camData = mainCam.gameObject.GetComponent<UniversalAdditionalCameraData>();
-        if (camData == null) camData = mainCam.gameObject.AddComponent<UniversalAdditionalCameraData>();
-        camData.renderPostProcessing = true;
-
-        CameraFollower follower = mainCam.gameObject.AddComponent<CameraFollower>();
-        SerializedObject soFollower = new SerializedObject(follower);
-        soFollower.FindProperty("m_target").objectReferenceValue = player.transform;
-        soFollower.FindProperty("m_offset").vector3Value = new Vector3(0, 6, -10);
-        soFollower.FindProperty("m_smoothSpeed").floatValue = 0.10f;
-        soFollower.ApplyModifiedProperties();
-        follower.enabled = false;
-
-        ScreenShake shake = mainCam.gameObject.AddComponent<ScreenShake>();
-        SerializedObject soShake = new SerializedObject(shake);
-        soShake.FindProperty("m_defaultDuration").floatValue = 0.3f;
-        soShake.FindProperty("m_defaultMagnitude").floatValue = 0.2f;
-        soShake.ApplyModifiedProperties();
-
-        CameraOrbiter orbiter = mainCam.gameObject.AddComponent<CameraOrbiter>();
-        SerializedObject soOrbiter = new SerializedObject(orbiter);
-        soOrbiter.FindProperty("m_target").objectReferenceValue = player.transform;
-        soOrbiter.FindProperty("m_distance").floatValue = 8f;
-        soOrbiter.FindProperty("m_orbitSpeed").floatValue = 3f;
-        soOrbiter.FindProperty("m_verticalClamp").vector2Value = new Vector2(-20f, 80f);
-        soOrbiter.FindProperty("m_zoomSpeed").floatValue = 2f;
-        soOrbiter.FindProperty("m_zoomClamp").vector2Value = new Vector2(2f, 15f);
-        soOrbiter.ApplyModifiedProperties();
-        orbiter.enabled = true;
+        // HazardZone void catcher
+        var voidGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        voidGo.name = "HazardZone_Void";
+        voidGo.transform.position   = new Vector3(0, -10, -2);
+        voidGo.transform.localScale = new Vector3(200, 1, 200);
+        voidGo.GetComponent<Collider>().isTrigger = true;
+        Object.DestroyImmediate(voidGo.GetComponent<MeshRenderer>());
+        voidGo.AddComponent<HazardZone>();
     }
 
-    private static void BuildHazards()
+    // ── MOVING PLATFORMS ─────────────────────────────────────────────────────
+
+    static void BuildPlatformSection()
     {
-        GameObject hazards = new GameObject("Hazards");
-
-        // Lava
-        GameObject lavaZones = new GameObject("LavaZones");
-        lavaZones.transform.SetParent(hazards.transform);
-
-        CreateHazard("HazardZone_Lava_A", new Vector3(0, 0.05f, 5), new Vector3(8, 0.1f, 6), GetMat("Mat_Hazard"), lavaZones);
-        CreateHazard("HazardZone_Lava_B", new Vector3(-5, 0.05f, -8), new Vector3(6, 0.1f, 5), GetMat("Mat_Hazard"), lavaZones);
-        CreateHazard("HazardZone_Lava_C", new Vector3(-14, 4.55f, -6), new Vector3(3, 0.1f, 4), GetMat("Mat_Hazard"), lavaZones);
-
-        GameObject hzVoid = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        hzVoid.name = "HazardZone_Void";
-        hzVoid.transform.position = new Vector3(0, -5, 0);
-        hzVoid.transform.localScale = new Vector3(100, 1, 100);
-        hzVoid.GetComponent<Collider>().isTrigger = true;
-        Object.DestroyImmediate(hzVoid.GetComponent<MeshRenderer>());
-        hzVoid.AddComponent<HazardZone>();
-        hzVoid.transform.SetParent(lavaZones.transform);
-
-        // Moving Platforms
-        GameObject movPlats = new GameObject("Platforms");
-        movPlats.transform.SetParent(hazards.transform);
-        CreateMovingPlatform("MovPlat_A", new Vector3(0, 1.5f, 0), new Vector3(3, 0.5f, 3), new Vector3(0, 1.5f, -10), 1.5f, movPlats);
-        CreateMovingPlatform("MovPlat_B", new Vector3(-6, 5, -6), new Vector3(3, 0.5f, 3), new Vector3(-16, 5, -6), 2.0f, movPlats);
-        CreateMovingPlatform("MovPlat_C", new Vector3(6, 5, -12), new Vector3(4, 0.5f, 4), new Vector3(6, 10, -12), 1.0f, movPlats);
-
-        // Swinging Bars
-        GameObject swingBars = new GameObject("SwingBars");
-        swingBars.transform.SetParent(hazards.transform);
-        CreateSwingBar("SwingBar_A_Pivot", new Vector3(6, 7, -6), 70, 0.8f, 0, new Vector3(0, 1, 0), "SwingBar_A_Bar", new Vector3(3, 0, 0), new Vector3(6, 0.3f, 0.3f), swingBars);
-        CreateSwingBar("SwingBar_B_Pivot", new Vector3(0, 14, -18), 50, 1.1f, 1.57f, new Vector3(0, 0, 1), "SwingBar_B_Bar", new Vector3(0, -3, 0), new Vector3(5, 0.3f, 0.3f), swingBars);
-
-        // Slow Zones
-        GameObject slowZones = new GameObject("SlowZones");
-        slowZones.transform.SetParent(hazards.transform);
-        CreateSlowZone("SlowZone_A", new Vector3(4, 3, -4), new Vector3(4, 4, 4), 0.35f, 4.0f, slowZones);
-        CreateSlowZone("SlowZone_B", new Vector3(0, 10, -17), new Vector3(10, 4, 3), 0.4f, 3.0f, slowZones);
+        var grp = new GameObject("MovingPlatforms");
+        HPlat("MovPlat_H_Left",  new Vector3(-10,1.5f,-13), new Vector3(4,.5f,4), 4f, 1.2f, grp);
+        HPlat("MovPlat_H_Right", new Vector3( 10,1.5f,-13), new Vector3(4,.5f,4), 4f, 1.4f, grp);
+        HPlat("MovPlat_H_Top",   new Vector3(  0,8f,  -25), new Vector3(4,.5f,4), 10f,1.6f, grp);
+        VPlat("MovPlat_V_Center",new Vector3(  0,4f,  -19), new Vector3(4,.5f,4), 4f, 0.8f, grp);
     }
 
-    private static void CreateSlowZone(string name, Vector3 pos, Vector3 scale, float slowScale, float transition, GameObject parent)
+    static void HPlat(string n, Vector3 pos, Vector3 s, float dist, float spd, GameObject p)
     {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name = name;
-        go.transform.position = pos;
-        go.transform.localScale = scale;
-        go.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_SlowZone");
-        go.GetComponent<Collider>().isTrigger = true;
-        SlowMotionZone zone = go.AddComponent<SlowMotionZone>();
-        SerializedObject so = new SerializedObject(zone);
-        so.FindProperty("m_slowTimeScale").floatValue = slowScale;
-        so.FindProperty("m_transitionSpeed").floatValue = transition;
-        so.ApplyModifiedProperties();
-        go.transform.SetParent(parent.transform);
+        var go = Cube(n, pos, s, p, GetMat("Mat_PlatformH"));
+        var rb = go.AddComponent<Rigidbody>(); rb.isKinematic = true;
+        var mp = go.AddComponent<PlatformMoverHorizontal>();
+        Sp(mp, ("moveDistance", dist), ("moveSpeed", spd));
+    }
+    static void VPlat(string n, Vector3 pos, Vector3 s, float h, float spd, GameObject p)
+    {
+        var go = Cube(n, pos, s, p, GetMat("Mat_PlatformV"));
+        var rb = go.AddComponent<Rigidbody>(); rb.isKinematic = true;
+        var mp = go.AddComponent<PlatformMoverVertical>();
+        Sp(mp, ("moveHeight", h), ("moveSpeed", spd));
     }
 
-    private static void CreateHazard(string name, Vector3 pos, Vector3 scale, Material mat, GameObject parent)
+    // ── HAZARD SECTION ───────────────────────────────────────────────────────
+
+    static void BuildHazardSection()
     {
-        GameObject go = CreateCube(name, pos, scale, parent, mat);
+        var grp = Child("HazardZones", null);
+        HazardPad("Hazard_Lava_A", new Vector3( 0, 0.05f,-12), new Vector3(28,.1f,4),  grp);
+        HazardPad("Hazard_Lava_B", new Vector3( 0, 3.55f,-11), new Vector3(28,.1f,4),  grp);
+        HazardPad("Hazard_Lava_C", new Vector3( 0, 3.55f,-20), new Vector3(28,.1f,4),  grp);
+    }
+
+    static void HazardPad(string name, Vector3 pos, Vector3 scale, GameObject parent)
+    {
+        var go = Cube(name, pos, scale, parent, GetMat("Mat_Hazard"));
         go.GetComponent<Collider>().isTrigger = true;
         go.AddComponent<HazardZone>();
+    }
 
-        if (name.Contains("Lava"))
+    // ── COLLECTIBLES ─────────────────────────────────────────────────────────
+    // Point lights as children — shadows disabled; emissive + local light is the teaching moment.
+
+    static void BuildCollectibles()
+    {
+        EnsureFolder("Assets/Prefabs");
+        var burstPrefab = MakeParticlePrefab("FX_Collect_Burst", new Color(1f, 0.85f, 0f));
+
+        var grp     = new GameObject("Collectibles");
+        var common  = Child("Common", grp);
+        var rare    = Child("Rare",   grp);
+        var bonus   = Child("Bonus",  grp);
+
+        var commonPos = new Vector3[]
         {
-            ColorPulse cp = go.AddComponent<ColorPulse>();
-            SerializedObject soCp = new SerializedObject(cp);
-            soCp.FindProperty("m_colorA").colorValue = new Color(0.9f, 0.1f, 0.0f);
-            soCp.FindProperty("m_colorB").colorValue = new Color(1.0f, 0.6f, 0.0f);
-            soCp.FindProperty("m_pulseSpeed").floatValue = 3.0f;
-            soCp.ApplyModifiedProperties();
-        }
-    }
-
-    private static void CreateMovingPlatform(string name, Vector3 pos, Vector3 scale, Vector3 ptB, float speed, GameObject parent)
-    {
-        GameObject go = CreateCube(name, pos, scale, parent, GetMat("Mat_MovingPlatform"));
-        MovingPlatform mp = go.AddComponent<MovingPlatform>();
-        SerializedObject so = new SerializedObject(mp);
-        so.FindProperty("m_pointA").vector3Value = pos;
-        so.FindProperty("m_pointB").vector3Value = ptB;
-        so.FindProperty("m_speed").floatValue = speed;
-        so.FindProperty("m_isSmoothPingPong").boolValue = true;
-        so.ApplyModifiedProperties();
-    }
-
-    private static void CreateSwingBar(string pivotName, Vector3 pivotPos, float angle, float speed, float offset, Vector3 axis, string barName, Vector3 barLocalPos, Vector3 barScale, GameObject parent)
-    {
-        GameObject pivot = new GameObject(pivotName);
-        pivot.transform.position = pivotPos;
-        pivot.transform.SetParent(parent.transform);
-        SwingingBar sb = pivot.AddComponent<SwingingBar>();
-        SerializedObject so = new SerializedObject(sb);
-        so.FindProperty("m_swingAngle").floatValue = angle;
-        so.FindProperty("m_swingSpeed").floatValue = speed;
-        so.FindProperty("m_phaseOffset").floatValue = offset;
-        so.FindProperty("m_swingAxis").vector3Value = axis;
-        so.ApplyModifiedProperties();
-
-        GameObject bar = CreateCube(barName, Vector3.zero, barScale, pivot, GetMat("Mat_SwingBar"));
-        bar.transform.localPosition = barLocalPos;
-        Rigidbody rb = bar.AddComponent<Rigidbody>();
-        rb.isKinematic = true;
-    }
-
-    private static void BuildCollectibles()
-    {
-        GameObject colls = new GameObject("Collectibles");
-        GameObject commonGrp = new GameObject("Common"); commonGrp.transform.SetParent(colls.transform);
-        GameObject rareGrp = new GameObject("Rare"); rareGrp.transform.SetParent(colls.transform);
-        GameObject bonusGrp = new GameObject("Bonus"); bonusGrp.transform.SetParent(colls.transform);
-        GameObject spawnersGrp = new GameObject("Spawners");
-
-        CreateParticlePrefab("FX_Collect_Burst", new Color(1.0f, 0.85f, 0.0f));
-        CreateParticlePrefab("FX_Collect_Rare", new Color(0.0f, 0.8f, 1.0f));
-        CreateParticlePrefab("FX_Collect_Bonus", new Color(1.0f, 0.2f, 0.9f));
-
-        // Common
-        float[] cPhases = { 0.0f, 0.8f, 1.6f, 2.4f, 3.2f, 4.0f, 4.8f, 5.6f };
-        Vector3[] cPositions = {
-            new Vector3(3, 1, 18), new Vector3(-3, 1, 18), new Vector3(10, 1.5f, 10), new Vector3(-12, 1.5f, 8),
-            new Vector3(0, 1, -15), new Vector3(16, 1.5f, -8), new Vector3(-5, 1, -5), new Vector3(5, 1, -5)
+            new(-3,1,18), new(3,1,18), new(0,1,18),     // spawn area
+            new(-12,1,2), new(0,1,2), new(12,1,2),       // trigger zone row
+            new(-10,2,-6), new(0,2,-8), new(10,2,-6),    // tier 1
         };
-        for (int i = 0; i < 8; i++)
-        {
-            GameObject c = CreateCollectible($"Col_C{i + 1:00}", cPositions[i], 0.5f, GetMat("Mat_Collectible_Common"), 10, 0.25f, 1.5f, 90, null, 0, cPhases[i], commonGrp);
-            
-            // Generate Prefab from the first common collectible for spawners
-            if (i == 0)
-            {
-                if (!AssetDatabase.IsValidFolder("Assets/Prefabs")) AssetDatabase.CreateFolder("Assets", "Prefabs");
-                GameObject prefabObj = Object.Instantiate(c);
-                TimedDestroyer td = prefabObj.AddComponent<TimedDestroyer>();
-                SerializedObject soTd = new SerializedObject(td);
-                soTd.FindProperty("m_lifetimeInSeconds").floatValue = 20f;
-                soTd.ApplyModifiedProperties();
-                PrefabUtility.SaveAsPrefabAsset(prefabObj, "Assets/Prefabs/Collectible_Common_Prefab.prefab");
-                Object.DestroyImmediate(prefabObj);
-            }
-        }
+        for (int i = 0; i < commonPos.Length; i++)
+            SpawnCoin($"Coin_C{i+1:D2}", commonPos[i], .50f, "Mat_Coin_Common", 10, burstPrefab, common);
 
-        // Rare
-        float[] rPhases = { 1.0f, 2.5f, 4.0f, 5.5f };
-        Vector3[] rPositions = {
-            new Vector3(-10, 5.5f, -4), new Vector3(6, 5.5f, -6), new Vector3(-18, 5.5f, -10), new Vector3(-12, 5.5f, -8)
-        };
-        for (int i = 0; i < 4; i++)
-        {
-            CreateCollectible($"Col_R{i + 1:00}", rPositions[i], 0.6f, GetMat("Mat_Collectible_Rare"), 25, 0.3f, 1.8f, 120, new Color(0, 0.8f, 1f), 2.0f, rPhases[i], rareGrp);
-        }
+        var rarePos = new Vector3[]
+        { new(-12,5,-15), new(0,5,-17), new(12,5,-15), new(-10,5,-16), new(10,5,-16) };
+        for (int i = 0; i < rarePos.Length; i++)
+            SpawnCoin($"Coin_R{i+1:D2}", rarePos[i], .55f, "Mat_Coin_Rare", 25, burstPrefab, rare);
 
-        // Bonus
-        float[] bPhases = { 0.5f, 2.0f, 3.5f };
-        Vector3[] bPositions = {
-            new Vector3(0, 10.5f, -20), new Vector3(12, 10.5f, -18), new Vector3(-12, 10.5f, -18)
-        };
-        for (int i = 0; i < 3; i++)
-        {
-            CreateCollectible($"Col_B{i + 1:00}", bPositions[i], 0.75f, GetMat("Mat_Collectible_Bonus"), 50, 0.4f, 2.0f, 180, new Color(1f, 0.2f, 0.9f), 3.0f, bPhases[i], bonusGrp);
-        }
-
-        // Spawners
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Collectible_Common_Prefab.prefab");
-        CreateSpawner("Spawner_A", new Vector3(0, 1.5f, 12), prefab, 8, 3, new Vector3(4, 0, 4), spawnersGrp);
-        CreateSpawner("Spawner_B", new Vector3(-8, 5, -4), prefab, 10, 2, new Vector3(2, 0, 2), spawnersGrp);
+        var bonusPos = new Vector3[]
+        { new(-8,9,-23), new(0,9.5f,-26), new(8,9,-23) };
+        for (int i = 0; i < bonusPos.Length; i++)
+            SpawnCoin($"Coin_B{i+1:D2}", bonusPos[i], .65f, "Mat_Coin_Bonus", 50, burstPrefab, bonus);
     }
 
-    private static void CreateSpawner(string name, Vector3 pos, GameObject prefab, float interval, int max, Vector3 offset, GameObject parent)
+    static void SpawnCoin(string name, Vector3 pos, float sz, string mat, int pts, GameObject burst, GameObject parent)
     {
-        GameObject sp = new GameObject(name);
-        sp.transform.position = pos;
-        sp.transform.SetParent(parent.transform);
-        ObjectSpawner os = sp.AddComponent<ObjectSpawner>();
-        SerializedObject so = new SerializedObject(os);
-        so.FindProperty("m_prefabToSpawn").objectReferenceValue = prefab;
-        so.FindProperty("m_spawnInterval").floatValue = interval;
-        so.FindProperty("m_maxActiveCount").intValue = max;
-        so.FindProperty("m_randomPositionOffset").vector3Value = offset;
-        so.ApplyModifiedProperties();
-    }
-
-    private static GameObject CreateCollectible(string name, Vector3 pos, float scale, Material mat, int points, float bobH, float bobS, float rotS, Color? pulseA, float pulseSpeed, float phase, GameObject parent)
-    {
-        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         go.name = name;
-        go.transform.position = pos;
-        go.transform.localScale = Vector3.one * scale;
-        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        go.transform.position   = pos;
+        go.transform.localScale = Vector3.one * sz;
+        go.GetComponent<MeshRenderer>().sharedMaterial = GetMat(mat);
         go.GetComponent<Collider>().isTrigger = true;
         go.transform.SetParent(parent.transform);
 
-        Collectible c = go.AddComponent<Collectible>();
-        SerializedObject soC = new SerializedObject(c);
-        soC.FindProperty("m_pointValue").intValue = points;
-        string pName = points == 50 ? "FX_Collect_Bonus" : (points == 25 ? "FX_Collect_Rare" : "FX_Collect_Burst");
-        GameObject pFx = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Prefabs/{pName}.prefab");
-        if (pFx != null) soC.FindProperty("m_collectEffectPrefab").objectReferenceValue = pFx;
-        soC.ApplyModifiedProperties();
+        var col = go.AddComponent<Collectible>();
+        Sp(col, ("pointValue", pts));
 
-        ObjectBobber ob = go.AddComponent<ObjectBobber>();
-        SerializedObject soOb = new SerializedObject(ob);
-        soOb.FindProperty("m_bobHeight").floatValue = bobH;
-        soOb.FindProperty("m_bobSpeed").floatValue = bobS;
-        soOb.FindProperty("m_phaseOffset").floatValue = phase;
-        soOb.ApplyModifiedProperties();
+        // Point light — yellow/tinted, range 3, no shadows.
+        // Teaching: Emission drives the material; Point Light drives the scene.
+        var lightGo = new GameObject("PointLight");
+        lightGo.transform.SetParent(go.transform, false);
+        var pl = lightGo.AddComponent<Light>();
+        pl.type      = LightType.Point;
+        pl.range     = 3f;
+        pl.intensity = 1.8f;
+        pl.color     = mat == "Mat_Coin_Common" ? new Color(1f,0.9f,0.2f)
+                     : mat == "Mat_Coin_Rare"   ? new Color(0.2f,0.8f,1f)
+                                                : new Color(1f,0.2f,0.9f);
+        pl.shadows   = LightShadows.None; // shadow-casting point lights are expensive
+        pl.lightmapBakeType = LightmapBakeType.Realtime; // coins are destroyed at runtime
+    }
 
-        ObjectRotator or = go.AddComponent<ObjectRotator>();
-        SerializedObject soOr = new SerializedObject(or);
-        soOr.FindProperty("m_rotationSpeedY").floatValue = rotS;
-        soOr.ApplyModifiedProperties();
+    // ── LIGHT PROBES ─────────────────────────────────────────────────────────
+    // 8 probes in a low grid — dynamic objects (player, coins) sample them
+    // to receive believable ambient colour from the baked environment.
 
-        if (pulseA.HasValue)
+    static void BuildLightProbes()
+    {
+        var lpGo = new GameObject("LightProbeGroup");
+        var lpg  = lpGo.AddComponent<LightProbeGroup>();
+
+        lpg.probePositions = new Vector3[]
         {
-            ColorPulse cp = go.AddComponent<ColorPulse>();
-            SerializedObject soCp = new SerializedObject(cp);
-            soCp.FindProperty("m_colorA").colorValue = pulseA.Value;
-            soCp.FindProperty("m_colorB").colorValue = Color.white;
-            if (points == 50) soCp.FindProperty("m_colorB").colorValue = new Color(1, 1, 0.5f);
-            soCp.FindProperty("m_pulseSpeed").floatValue = pulseSpeed;
-            soCp.ApplyModifiedProperties();
+            // Floor level ring — just above ground
+            new(-20,1.5f, 15), new(20,1.5f, 15),
+            new(-20,1.5f,-10), new(20,1.5f,-10),
+            new(-20,1.5f,-25), new(20,1.5f,-25),
+            // Mid-height probes for elevated platforms
+            new(-12,5f,-15), new(12,5f,-15),
+            // Tier 3
+            new(0,9f,-26),
+        };
+    }
+
+    // ── REFLECTION PROBE ─────────────────────────────────────────────────────
+    // One baked probe at arena centre. Increase Mat_Floor smoothness > 0.5
+    // to see it reflect the baked scene instead of the default skybox.
+
+    static void BuildReflectionProbe()
+    {
+        var rpGo = new GameObject("ReflectionProbe_Centre");
+        rpGo.transform.position = new Vector3(0, 3, -5);
+        var rp = rpGo.AddComponent<ReflectionProbe>();
+        rp.mode       = ReflectionProbeMode.Baked;
+        rp.size       = new Vector3(60, 20, 70);
+        rp.boxProjection = true;
+        rp.resolution = 128;
+        rp.importance = 1;
+    }
+
+    // ── MATERIAL SHOWCASE ────────────────────────────────────────────────────
+    // A row of spheres demonstrating the Metallic × Smoothness grid.
+    // Placed near the spawn pad so students see them immediately.
+
+    static void BuildMaterialShowcase()
+    {
+        var grp = new GameObject("MaterialShowcase");
+        grp.transform.position = new Vector3(-14, 0, 20);
+
+        // Sign label parent (text label not possible via editor script without canvas;
+        // naming the GameObjects descriptively is sufficient for the demo)
+        var configs = new (string name, float met, float smo)[]
+        {
+            ("Chalk_M0_S0",    0.0f, 0.0f),
+            ("Plastic_M0_S1",  0.0f, 1.0f),
+            ("BrushedSteel_M1_S0", 1.0f, 0.0f),
+            ("Chrome_M1_S1",   1.0f, 1.0f),
+            ("MidRange_M05_S05", 0.5f, 0.5f),
+        };
+
+        for (int i = 0; i < configs.Length; i++)
+        {
+            var (n, met, smo) = configs[i];
+            var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.name = n;
+            sphere.transform.SetParent(grp.transform);
+            sphere.transform.localPosition = new Vector3(i * 2.5f, 1, 0);
+            sphere.transform.localScale    = Vector3.one * 0.9f;
+
+            // Each sphere gets a unique material for real-time inspector editing
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.SetColor("_BaseColor",  new Color(0.7f, 0.7f, 0.7f));
+            mat.SetFloat("_Metallic",   met);
+            mat.SetFloat("_Smoothness", smo);
+            AssetDatabase.CreateAsset(mat, $"Assets/Materials/Session4/Mat_Demo_{n}.mat");
+            sphere.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            GameObjectUtility.SetStaticEditorFlags(sphere, StaticEditorFlags.ContributeGI);
         }
 
+        // Small label cubes behind each sphere so students can read the names in Scene view
+        AssetDatabase.SaveAssets();
+    }
+
+    // ── SCORE UI ─────────────────────────────────────────────────────────────
+
+    static void BuildScoreUI()
+    {
+        var smGo = new GameObject("ScoreManager");
+        var sm   = smGo.AddComponent<ScoreManager>();
+
+        var canvasGo = new GameObject("Canvas");
+        var canvas   = canvasGo.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        var scaler = canvasGo.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+        canvasGo.AddComponent<GraphicRaycaster>();
+
+        // HUD top bar
+        var hud = MakePanel("HUD", canvasGo, new Color(0,0,0,.5f),
+            new Vector2(0,1), new Vector2(1,1), new Vector2(.5f,1), new Vector2(0,72));
+
+        var scoreTmp = MakeTMP("ScoreText", hud, "Score: 0", 40, new Color(1f,.9f,.15f),
+            new Vector2(350,60), new Vector2(20,-36),
+            new Vector2(0,.5f), new Vector2(0,.5f), TextAlignmentOptions.Left);
+
+        MakeTMP("HintText", hud,
+            "WASD Move  |  Space Jump  |  Collect all coins!",
+            22, new Color(.85f,.85f,.85f,.75f),
+            new Vector2(800,60), new Vector2(-20,-36),
+            new Vector2(1,.5f), new Vector2(1,.5f), TextAlignmentOptions.Right);
+
+        // Bottom info bar — reminds students about the baking workflow
+        var bottomBar = MakePanel("InfoBar", canvasGo, new Color(0,0,0,.35f),
+            new Vector2(0,0), new Vector2(1,0), new Vector2(.5f,0), new Vector2(0,44));
+        MakeTMP("InfoLabel", bottomBar,
+            "Session 4 — Window > Rendering > Lighting > Generate Lighting to bake  |  Light Probes & Reflection Probe present",
+            20, new Color(.9f,.9f,.9f,.80f),
+            new Vector2(1400,36), new Vector2(0,22),
+            new Vector2(.5f,0), new Vector2(.5f,0), TextAlignmentOptions.Center);
+
+        var sdGo = new GameObject("ScoreDisplay");
+        sdGo.transform.SetParent(canvasGo.transform, false);
+        var sd = sdGo.AddComponent<ScoreDisplay>();
+        Sp(sd, ("scoreText", (Object)scoreTmp));
+
+        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateText);
+    }
+
+    // ── PARTICLE PREFAB ──────────────────────────────────────────────────────
+
+    static GameObject MakeParticlePrefab(string name, Color color)
+    {
+        string path = $"Assets/Prefabs/{name}.prefab";
+        EnsureFolder("Assets/Prefabs");
+        var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+        if (existing != null) return existing;
+
+        var go = new GameObject(name);
+        var ps = go.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.duration      = 0.5f;
+        main.loop          = false;
+        main.startLifetime = 0.4f;
+        main.startSpeed    = 5f;
+        main.startSize     = 0.12f;
+        main.startColor    = color;
+        main.stopAction    = ParticleSystemStopAction.Destroy;
+        var em = ps.emission;
+        em.SetBursts(new[] { new ParticleSystem.Burst(0f, 24) });
+        var sh = ps.shape;
+        sh.shapeType = ParticleSystemShapeType.Sphere;
+        sh.radius    = 0.1f;
+
+        var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
+        Object.DestroyImmediate(go);
+        return prefab;
+    }
+
+    // ── PRIMITIVE & UI HELPERS ───────────────────────────────────────────────
+
+    static GameObject Cube(string name, Vector3 pos, Vector3 scale, GameObject parent, Material mat)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = name;
+        go.transform.position   = pos;
+        go.transform.localScale = scale;
+        if (mat != null)    go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        if (parent != null) go.transform.SetParent(parent.transform);
         return go;
     }
 
-    private static void BuildManagersAndUI()
+    static GameObject Child(string name, GameObject parent)
     {
-        GameObject scoreMgr = new GameObject("ScoreManager");
-        ScoreManager sm = scoreMgr.AddComponent<ScoreManager>();
-
-        GameObject gameMgr = new GameObject("GameManager");
-        CountdownTimer timer = gameMgr.AddComponent<CountdownTimer>();
-        SerializedObject soTimer = new SerializedObject(timer);
-        soTimer.FindProperty("m_startTime").floatValue = 90f;
-        soTimer.ApplyModifiedProperties();
-
-        WinCondition win = gameMgr.AddComponent<WinCondition>();
-        SerializedObject soWin = new SerializedObject(win);
-        soWin.FindProperty("m_timerToStop").objectReferenceValue = timer;
-        soWin.ApplyModifiedProperties();
-
-        SceneLoader loader = gameMgr.AddComponent<SceneLoader>();
-
-        // UI
-        GameObject canvasGo = new GameObject("Canvas");
-        Canvas canvas = canvasGo.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        CanvasScaler scaler = canvasGo.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
-        canvasGo.AddComponent<GraphicRaycaster>();
-
-        GameObject hud = new GameObject("HUD_Panel");
-        hud.transform.SetParent(canvasGo.transform, false);
-        Image hudImg = hud.AddComponent<Image>();
-        hudImg.color = new Color(0, 0, 0, 0.45f);
-        RectTransform rtHud = hud.GetComponent<RectTransform>();
-        rtHud.anchorMin = new Vector2(0, 1);
-        rtHud.anchorMax = new Vector2(1, 1);
-        rtHud.pivot = new Vector2(0.5f, 1);
-        rtHud.sizeDelta = new Vector2(0, 80);
-        rtHud.anchoredPosition = Vector2.zero;
-
-        // ScoreText
-        GameObject scoreTxtGo = new GameObject("ScoreText");
-        scoreTxtGo.transform.SetParent(hud.transform, false);
-        TextMeshProUGUI scoreText = scoreTxtGo.AddComponent<TextMeshProUGUI>();
-        scoreText.text = "Score: 0";
-        scoreText.fontSize = 38;
-        scoreText.color = new Color(1.0f, 0.9f, 0.2f, 1.0f);
-        RectTransform rtScore = scoreTxtGo.GetComponent<RectTransform>();
-        rtScore.anchorMin = new Vector2(0, 1);
-        rtScore.anchorMax = new Vector2(0, 1);
-        rtScore.pivot = new Vector2(0, 1);
-        rtScore.sizeDelta = new Vector2(320, 55);
-        rtScore.anchoredPosition = new Vector2(140, -40);
-        ScoreDisplay sd = scoreTxtGo.AddComponent<ScoreDisplay>();
-        SerializedObject soSd = new SerializedObject(sd);
-        soSd.FindProperty("m_prefix").stringValue = "Score: ";
-        soSd.ApplyModifiedProperties();
-
-        // TimerText
-        GameObject timerTxtGo = new GameObject("TimerText");
-        timerTxtGo.transform.SetParent(hud.transform, false);
-        TextMeshProUGUI timerText = timerTxtGo.AddComponent<TextMeshProUGUI>();
-        timerText.text = "Time: 90";
-        timerText.fontSize = 42;
-        timerText.color = Color.white;
-        RectTransform rtTimer = timerTxtGo.GetComponent<RectTransform>();
-        rtTimer.anchorMin = new Vector2(0.5f, 1);
-        rtTimer.anchorMax = new Vector2(0.5f, 1);
-        rtTimer.pivot = new Vector2(0.5f, 1);
-        rtTimer.sizeDelta = new Vector2(220, 55);
-        rtTimer.anchoredPosition = new Vector2(0, -40);
-        TimerDisplay td = timerTxtGo.AddComponent<TimerDisplay>();
-        SerializedObject soTd = new SerializedObject(td);
-        soTd.FindProperty("m_prefix").stringValue = "Time: ";
-        soTd.FindProperty("m_warningThreshold").intValue = 15;
-        soTd.FindProperty("m_normalColor").colorValue = Color.white;
-        soTd.FindProperty("m_warningColor").colorValue = new Color(1, 0.1f, 0.1f);
-        soTd.ApplyModifiedProperties();
-
-        // TipText
-        GameObject tipTxtGo = new GameObject("TipText");
-        tipTxtGo.transform.SetParent(canvasGo.transform, false);
-        TextMeshProUGUI tipText = tipTxtGo.AddComponent<TextMeshProUGUI>();
-        tipText.text = "WASD Move   Space Jump   Shift Slide   Collect all orbs to win";
-        tipText.fontSize = 24;
-        tipText.color = new Color(0.8f, 0.8f, 0.8f, 0.7f);
-        tipText.alignment = TextAlignmentOptions.Center;
-        RectTransform rtTip = tipTxtGo.GetComponent<RectTransform>();
-        rtTip.anchorMin = new Vector2(0.5f, 0);
-        rtTip.anchorMax = new Vector2(0.5f, 0);
-        rtTip.pivot = new Vector2(0.5f, 0);
-        rtTip.sizeDelta = new Vector2(800, 40);
-        rtTip.anchoredPosition = new Vector2(0, 30);
-
-        // GameOverPanel
-        GameObject gop = CreatePanel("GameOverPanel", canvasGo, new Color(0, 0, 0, 0.8f));
-        CreateText("GameOverTitle", gop, "TIME'S UP", 80, new Color(1f, 0.2f, 0.2f), new Vector2(700, 120), new Vector2(0, 100));
-        CreateText("FinalScoreLabel", gop, "Score: 0", 44, new Color(1f, 0.85f, 0f), new Vector2(400, 70), new Vector2(0, 0));
-        Button goRestart = CreateButton("RestartButton", gop, "PLAY AGAIN", new Color(0.2f, 0.2f, 0.5f), new Vector2(300, 70), new Vector2(0, -100));
-        Button goMenu = CreateButton("MenuButton", gop, "MAIN MENU", new Color(0.15f, 0.15f, 0.15f), new Vector2(300, 70), new Vector2(0, -190));
-        gop.SetActive(false);
-
-        // WinPanel
-        GameObject wp = CreatePanel("WinPanel", canvasGo, new Color(0, 0, 0, 0.8f));
-        CreateText("WinTitle", wp, "YOU WIN!", 80, new Color(0f, 1f, 0.5f), new Vector2(700, 120), new Vector2(0, 120));
-        CreateText("WinSubtitle", wp, "All orbs collected!", 40, Color.white, new Vector2(600, 70), new Vector2(0, 30));
-        CreateText("WinScore", wp, "Score: 0", 48, new Color(1f, 0.85f, 0f), new Vector2(500, 70), new Vector2(0, -70));
-        Button wRestart = CreateButton("WinRestartButton", wp, "PLAY AGAIN", Color.black, new Vector2(300, 70), new Vector2(0, -170));
-        Button wMenu = CreateButton("WinMenuButton", wp, "MAIN MENU", Color.black, new Vector2(300, 70), new Vector2(0, -260));
-        wp.SetActive(false);
-
-        // Exit Button (Top Left)
-        Button btnExit = CreateButton("ExitButton", canvasGo, "MAIN MENU", new Color(0.75f, 0.15f, 0.25f, 1f), new Vector2(200, 60), new Vector2(0, 0));
-        RectTransform rtExit = btnExit.GetComponent<RectTransform>();
-        rtExit.anchorMin = new Vector2(0f, 1f);
-        rtExit.anchorMax = new Vector2(0f, 1f);
-        rtExit.pivot = new Vector2(0f, 1f);
-        rtExit.anchoredPosition = new Vector2(20, -20);
-        btnExit.GetComponentInChildren<TextMeshProUGUI>().fontSize = 28;
-
-        // Wiring Events
-        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.ScoreChanged, sd.UpdateScoreText); // Will fix method name later
-        UnityEditor.Events.UnityEventTools.AddPersistentListener(timer.TimerExpired, delegate { gop.SetActive(true); });
-        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(timer.TimerTicked, td.UpdateTimerDisplay);
-        UnityEditor.Events.UnityEventTools.AddPersistentListener(win.AllCollected, delegate { wp.SetActive(true); });
-
-        UnityEditor.Events.UnityEventTools.AddPersistentListener(goRestart.onClick, loader.ReloadCurrentScene);
-        UnityEditor.Events.UnityEventTools.AddIntPersistentListener(goMenu.onClick, loader.LoadSceneByIndex, 0);
-
-        UnityEditor.Events.UnityEventTools.AddPersistentListener(wRestart.onClick, loader.ReloadCurrentScene);
-        UnityEditor.Events.UnityEventTools.AddIntPersistentListener(wMenu.onClick, loader.LoadSceneByIndex, 0);
-
-        UnityEditor.Events.UnityEventTools.AddIntPersistentListener(btnExit.onClick, loader.LoadSceneByIndex, 0);
+        var go = new GameObject(name);
+        if (parent != null) go.transform.SetParent(parent.transform);
+        return go;
     }
 
-    private static GameObject CreatePanel(string name, GameObject parent, Color color)
+    static string EnsureFolder(string path)
     {
-        GameObject p = new GameObject(name);
-        p.transform.SetParent(parent.transform, false);
-        Image img = p.AddComponent<Image>();
-        img.color = color;
-        RectTransform rt = p.GetComponent<RectTransform>();
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.sizeDelta = Vector2.zero;
-        rt.anchoredPosition = Vector2.zero;
-        return p;
+        string[] parts = path.Split('/');
+        string cur = parts[0];
+        for (int i = 1; i < parts.Length; i++)
+        {
+            string next = cur + "/" + parts[i];
+            if (!AssetDatabase.IsValidFolder(next)) AssetDatabase.CreateFolder(cur, parts[i]);
+            cur = next;
+        }
+        return cur;
     }
 
-    private static TextMeshProUGUI CreateText(string name, GameObject parent, string text, int size, Color color, Vector2 sizeDelta, Vector2 pos)
+    static GameObject MakePanel(string name, GameObject parent, Color color,
+        Vector2 ancMin, Vector2 ancMax, Vector2 pivot, Vector2 size)
     {
-        GameObject t = new GameObject(name);
-        t.transform.SetParent(parent.transform, false);
-        TextMeshProUGUI tmp = t.AddComponent<TextMeshProUGUI>();
-        tmp.text = text;
-        tmp.fontSize = size;
-        tmp.color = color;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.fontStyle = text.Contains("TIME") || text.Contains("WIN") ? FontStyles.Bold : FontStyles.Normal;
-        RectTransform rt = t.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = sizeDelta;
-        rt.anchoredPosition = pos;
+        var go = new GameObject(name);
+        go.transform.SetParent(parent.transform, false);
+        var img = go.AddComponent<Image>(); img.color = color;
+        var rt  = go.GetComponent<RectTransform>();
+        rt.anchorMin = ancMin; rt.anchorMax = ancMax;
+        rt.pivot = pivot; rt.sizeDelta = size;
+        return go;
+    }
+
+    static TextMeshProUGUI MakeTMP(string name, GameObject parent, string text, int size,
+        Color color, Vector2 sd, Vector2 apos, Vector2? aMin = null, Vector2? aMax = null,
+        TextAlignmentOptions align = TextAlignmentOptions.Left)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent.transform, false);
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.text = text; tmp.fontSize = size; tmp.color = color; tmp.alignment = align;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = aMin ?? new Vector2(0,1); rt.anchorMax = aMax ?? new Vector2(0,1);
+        rt.pivot = new Vector2(0,.5f); rt.sizeDelta = sd; rt.anchoredPosition = apos;
         return tmp;
     }
 
-    private static Button CreateButton(string name, GameObject parent, string text, Color btnColor, Vector2 sizeDelta, Vector2 pos)
+    // Generic SerializedObject property setter — supports float, int, bool, Vector3, Color, Object
+    static void Sp(Object obj, params (string n, object v)[] props)
     {
-        GameObject b = new GameObject(name);
-        b.transform.SetParent(parent.transform, false);
-        Image img = b.AddComponent<Image>();
-        img.color = btnColor;
-        Button btn = b.AddComponent<Button>();
-        RectTransform rt = b.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = sizeDelta;
-        rt.anchoredPosition = pos;
-
-        CreateText(name + "_Text", b, text, 36, Color.white, sizeDelta, Vector2.zero).fontStyle = FontStyles.Bold;
-        return btn;
-    }
-
-    private static void BuildAudio()
-    {
-        GameObject az = new GameObject("AudioZones");
-
-        CreateAudioZone("AudioZone_Tier2", new Vector3(-10, 3, -2), new Vector3(12, 6, 4), 0.9f, true, az);
-        CreateAudioZone("AudioZone_Tier3", new Vector3(0, 8, -16), new Vector3(16, 6, 4), 1.0f, true, az);
-        CreateAudioZone("AudioZone_SlowZone", new Vector3(4, 3, -4), new Vector3(4, 4, 4), 0.6f, false, az);
-    }
-
-    private static void CreateAudioZone(string name, Vector3 pos, Vector3 bounds, float volume, bool playOnce, GameObject parent)
-    {
-        GameObject go = new GameObject(name);
-        go.transform.position = pos;
-        go.transform.SetParent(parent.transform);
-        BoxCollider bc = go.AddComponent<BoxCollider>();
-        bc.isTrigger = true;
-        bc.size = bounds;
-
-        AudioOnTrigger aot = go.AddComponent<AudioOnTrigger>();
-        SerializedObject so = new SerializedObject(aot);
-        so.FindProperty("m_volume").floatValue = volume;
-        so.FindProperty("m_isSinglePlay").boolValue = playOnce;
+        var so = new SerializedObject(obj);
+        foreach (var (n, v) in props)
+        {
+            var p = so.FindProperty(n);
+            if (p == null) { Debug.LogWarning($"[S4Builder] property '{n}' not found on {obj.GetType().Name}"); continue; }
+            switch (v)
+            {
+                case float   f: p.floatValue = f; break;
+                case int     i: p.intValue   = i; break;
+                case bool    b: p.boolValue  = b; break;
+                case Vector3 u: p.vector3Value = u; break;
+                case Color   c: p.colorValue   = c; break;
+                case Object  o: p.objectReferenceValue = o; break;
+            }
+        }
         so.ApplyModifiedProperties();
-    }
-
-    private static GameObject CreateParticlePrefab(string name, Color color)
-    {
-        string path = $"Assets/Prefabs/{name}.prefab";
-        if (!AssetDatabase.IsValidFolder("Assets/Prefabs")) AssetDatabase.CreateFolder("Assets", "Prefabs");
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return AssetDatabase.LoadAssetAtPath<GameObject>(path);
-
-        GameObject go = new GameObject(name);
-        ParticleSystem ps = go.AddComponent<ParticleSystem>();
-        var main = ps.main;
-        main.duration = 0.5f;
-        main.loop = false;
-        main.startLifetime = 0.4f;
-        main.startSpeed = 4f;
-        main.startSize = 0.15f;
-        main.startColor = color;
-        main.stopAction = ParticleSystemStopAction.Destroy;
-
-        var emission = ps.emission;
-        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 20) });
-
-        var shape = ps.shape;
-        shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.1f;
-
-        ps.GetComponent<ParticleSystemRenderer>().sharedMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Default-ParticleSystem.mat") ?? new Material(Shader.Find("Hidden/InternalErrorShader"));
-
-        GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
-        Object.DestroyImmediate(go);
-        return prefab;
     }
 }
