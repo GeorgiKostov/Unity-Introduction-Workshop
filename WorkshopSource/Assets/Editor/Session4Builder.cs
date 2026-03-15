@@ -5,9 +5,8 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using TMPro;
 using UnityEngine.UI;
-using Workshop.Session2_New;
-using Workshop.Session3.Feedback;
-using Workshop.Session3.Platforms;
+using WorkshopBehaviours.Session2_New;
+using WorkshopBehaviours.Session3.Platforms;
 
 /// <summary>
 /// Builds the Session 4 showcase scene: Rendering, Materials, Lighting and Baking.

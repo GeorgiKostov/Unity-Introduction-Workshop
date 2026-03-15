@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Rotates the object continuously around one or more of its local axes.
@@ -12,7 +12,7 @@ namespace Workshop.Session2_New
 
         private void Update()
         {
-            transform.Rotate(rotationSpeed * Time.deltaTime);
+            transform.Rotate(this.rotationSpeed * Time.deltaTime);
         }
     }
 }

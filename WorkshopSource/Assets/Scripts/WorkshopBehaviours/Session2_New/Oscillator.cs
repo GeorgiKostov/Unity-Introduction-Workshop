@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Moves the object back and forth along its local X axis using Mathf.Sin.
@@ -15,13 +15,13 @@ namespace Workshop.Session2_New
 
         private void Awake()
         {
-            startPosition = transform.localPosition;
+            this.startPosition = transform.localPosition;
         }
 
         private void Update()
         {
-            float offset = Mathf.Sin(Time.time * frequency) * amplitude;
-            transform.localPosition = startPosition + new Vector3(offset, 0, 0);
+            float offset = Mathf.Sin(Time.time * this.frequency) * this.amplitude;
+            transform.localPosition = this.startPosition + new Vector3(offset, 0, 0);
         }
     }
 }

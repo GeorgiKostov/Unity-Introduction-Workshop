@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Hazards
+namespace WorkshopBehaviours.Session3.Hazards
 {
     /// <summary>
     /// Moves a platform back and forth between two world positions.
@@ -46,8 +46,8 @@ namespace Workshop.Session3.Hazards
         // Draw the path in Scene view so students can see the range.
         private void OnDrawGizmos()
         {
-            Vector3 a = m_markerA != null ? m_markerA.position : m_pointA;
-            Vector3 b = m_markerB != null ? m_markerB.position : m_pointB;
+            Vector3 a = this.m_markerA != null ? this.m_markerA.position : this.m_pointA;
+            Vector3 b = this.m_markerB != null ? this.m_markerB.position : this.m_pointB;
 
             Gizmos.color = Color.cyan;
             Gizmos.DrawLine(a, b);
@@ -63,8 +63,8 @@ namespace Workshop.Session3.Hazards
         private void InitializeWaypoints()
         {
             // Use marker Transforms if assigned, otherwise use Vector3 fields.
-            m_startPosition = m_markerA != null ? m_markerA.position : m_pointA;
-            m_endPosition = m_markerB != null ? m_markerB.position : m_pointB;
+            this.m_startPosition = this.m_markerA != null ? this.m_markerA.position : this.m_pointA;
+            this.m_endPosition = this.m_markerB != null ? this.m_markerB.position : this.m_pointB;
         }
 
         /// <summary>
@@ -73,14 +73,14 @@ namespace Workshop.Session3.Hazards
         private void ApplyMovement()
         {
             // PingPong oscillates t between 0 and 1 continuously.
-            float t = Mathf.PingPong(Time.time * m_speed, 1f);
+            float t = Mathf.PingPong(Time.time * this.m_speed, 1f);
 
-            if (m_isSmoothPingPong)
+            if (this.m_isSmoothPingPong)
             {
                 t = Mathf.SmoothStep(0f, 1f, t);
             }
 
-            transform.position = Vector3.Lerp(m_startPosition, m_endPosition, t);
+            transform.position = Vector3.Lerp(this.m_startPosition, this.m_endPosition, t);
         }
         #endregion
     }

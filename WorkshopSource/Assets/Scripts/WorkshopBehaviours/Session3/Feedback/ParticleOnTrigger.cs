@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Feedback
+namespace WorkshopBehaviours.Session3.Feedback
 {
     /// <summary>
     /// Instantiates a particle effect prefab when the player enters this trigger.
@@ -27,13 +27,13 @@ namespace Workshop.Session3.Feedback
         private void OnTriggerEnter(Collider other)
         {
             // Only react to the player.
-            if (!other.CompareTag(Workshop.Tags.Player))
+            if (!other.CompareTag(Tags.Player))
             {
                 return;
             }
 
             // Check if we already triggered and it's a one-time trigger.
-            if (m_isSingleTrigger && m_hasTriggered)
+            if (this.m_isSingleTrigger && this.m_hasTriggered)
             {
                 return;
             }
@@ -49,17 +49,17 @@ namespace Workshop.Session3.Feedback
         /// <param name="playerObject">The player GameObject that hit the trigger.</param>
         private void SpawnEffect(GameObject playerObject)
         {
-            if (m_particlePrefab == null)
+            if (this.m_particlePrefab == null)
             {
                 return;
             }
 
-            Vector3 spawnPos = m_shouldSpawnAtPlayer
+            Vector3 spawnPos = this.m_shouldSpawnAtPlayer
                 ? playerObject.transform.position
                 : transform.position;
 
-            Instantiate(m_particlePrefab, spawnPos, Quaternion.identity);
-            m_hasTriggered = true;
+            Instantiate(this.m_particlePrefab, spawnPos, Quaternion.identity);
+            this.m_hasTriggered = true;
         }
         #endregion
     }

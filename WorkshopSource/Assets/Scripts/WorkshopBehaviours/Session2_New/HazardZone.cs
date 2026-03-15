@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Teleports the player to the spawn point when they enter this zone.

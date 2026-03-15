@@ -1,8 +1,7 @@
 using UnityEngine;
-using Workshop.Session2.Movement;
-using Workshop.Session3.GameFlow;
+using WorkshopBehaviours.Session2.Movement;
 
-namespace Workshop.Session4.Advanced
+namespace WorkshopBehaviours.Session4.Advanced
 {
     public class CheckpointZone : MonoBehaviour
     {
@@ -10,14 +9,14 @@ namespace Workshop.Session4.Advanced
         
         private void OnTriggerEnter(Collider other)
         {
-            if (m_activated || !other.CompareTag("Player"))
+            if (this.m_activated || !other.CompareTag("Player"))
                 return;
 
             PlayerRespawner respawner = other.GetComponent<PlayerRespawner>();
             if (respawner != null)
             {
                 respawner.SetSpawnPoint(transform);
-                m_activated = true;
+                this.m_activated = true;
 
                 // Change material emission color to indicate activated state
                 Renderer render = GetComponent<Renderer>();

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Orbits this object around a target Transform at a fixed radius.
@@ -15,21 +15,21 @@ namespace Workshop.Session2_New
 
         private void Start()
         {
-            if (target == null)
+            if (this.target == null)
             {
                 Debug.LogWarning("ObjectOrbiter has no target assigned. Orbiting will not work properly.");
                 return;
             }
 
             // Position at correct initial distance
-            transform.position = target.position + (transform.position - target.position).normalized * orbitRadius;
+            transform.position = this.target.position + (transform.position - this.target.position).normalized * this.orbitRadius;
         }
 
         private void Update()
         {
-            if (target == null) return;
+            if (this.target == null) return;
             
-            transform.RotateAround(target.position, orbitAxis, orbitSpeed * Time.deltaTime);
+            transform.RotateAround(this.target.position, this.orbitAxis, this.orbitSpeed * Time.deltaTime);
         }
     }
 }

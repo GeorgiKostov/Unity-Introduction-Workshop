@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Polish
+namespace WorkshopBehaviours.Session4.Polish
 {
     /// <summary>
     /// Slows time when the player enters this trigger zone.
@@ -34,27 +34,27 @@ namespace Workshop.Session4.Polish
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!other.CompareTag(Workshop.Tags.Player))
+            if (!other.CompareTag(Tags.Player))
             {
                 return;
             }
 
-            m_playersInsideCount++;
-            m_targetTimeScale = m_slowTimeScale;
+            this.m_playersInsideCount++;
+            this.m_targetTimeScale = this.m_slowTimeScale;
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (!other.CompareTag(Workshop.Tags.Player))
+            if (!other.CompareTag(Tags.Player))
             {
                 return;
             }
 
-            m_playersInsideCount = Mathf.Max(0, m_playersInsideCount - 1);
+            this.m_playersInsideCount = Mathf.Max(0, this.m_playersInsideCount - 1);
             
-            if (m_playersInsideCount == 0)
+            if (this.m_playersInsideCount == 0)
             {
-                m_targetTimeScale = 1f;
+                this.m_targetTimeScale = 1f;
             }
         }
 
@@ -75,8 +75,8 @@ namespace Workshop.Session4.Polish
             // Use unscaledDeltaTime because timeScale affects regular deltaTime.
             Time.timeScale = Mathf.MoveTowards(
                 Time.timeScale,
-                m_targetTimeScale,
-                m_transitionSpeed * Time.unscaledDeltaTime
+                this.m_targetTimeScale,
+                this.m_transitionSpeed * Time.unscaledDeltaTime
             );
 
             // Keep fixedDeltaTime in sync with timeScale for physics accuracy.

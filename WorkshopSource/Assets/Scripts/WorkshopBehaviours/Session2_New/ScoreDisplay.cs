@@ -1,8 +1,7 @@
-using UnityEngine;
 using TMPro;
-using UnityEngine.PlayerLoop;
+using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Listens for OnScoreChanged and updates a TextMeshPro UI text element.
@@ -18,7 +17,7 @@ namespace Workshop.Session2_New
         
         public void UpdateText(int newScore)
         {
-            scoreText.text = "Score: " + newScore;
+            this.scoreText.text = "Score: " + newScore;
         }
     }
 }

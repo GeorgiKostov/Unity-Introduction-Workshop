@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
-using Workshop.Session2_New;
+using WorkshopBehaviours.Session2_New;
 
 /// <summary>
 /// Builds the Session 2 showcase scene from scratch.

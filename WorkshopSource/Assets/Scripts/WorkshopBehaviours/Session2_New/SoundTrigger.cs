@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Plays an audio clip when the player enters the trigger.
@@ -16,12 +16,12 @@ namespace Workshop.Session2_New
 
         private void Awake()
         {
-            audioSource = GetComponent<AudioSource>();
+            this.audioSource = GetComponent<AudioSource>();
         }
 
         private void Start()
         {
-            if (audioClip == null)
+            if (this.audioClip == null)
             {
                 Debug.LogWarning("SoundTrigger: audioClip is missing. Sound will not play.");
             }
@@ -29,12 +29,12 @@ namespace Workshop.Session2_New
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!isPlayerInside && other.CompareTag("Player"))
+            if (!this.isPlayerInside && other.CompareTag("Player"))
             {
-                isPlayerInside = true;
-                if (audioClip != null)
+                this.isPlayerInside = true;
+                if (this.audioClip != null)
                 {
-                    audioSource.PlayOneShot(audioClip);
+                    this.audioSource.PlayOneShot(this.audioClip);
                 }
             }
         }
@@ -43,7 +43,7 @@ namespace Workshop.Session2_New
         {
             if (other.CompareTag("Player"))
             {
-                isPlayerInside = false;
+                this.isPlayerInside = false;
             }
         }
     }

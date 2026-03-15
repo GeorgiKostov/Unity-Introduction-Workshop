@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.Events;
-using Workshop.Session2.Collectibles;
+using WorkshopBehaviours.Session2.Collectibles;
 
-namespace Workshop.Session3.GameFlow
+namespace WorkshopBehaviours.Session3.GameFlow
 {
     /// <summary>
     /// Tracks how many Collectible objects are in the scene and triggers a win event.
@@ -25,31 +25,31 @@ namespace Workshop.Session3.GameFlow
         #endregion
 
         #region Properties
-        public UnityEvent AllCollected => m_allCollected;
+        public UnityEvent AllCollected => this.m_allCollected;
         #endregion
 
         #region MonoBehaviour Methods
         private void Awake()
         {
             // Cache reference to the ScoreManager in the scene.
-            m_scoreManager = FindFirstObjectByType<ScoreManager>();
+            this.m_scoreManager = FindFirstObjectByType<ScoreManager>();
         }
 
         private void OnEnable()
         {
             // Subscribe to score changes to check win condition efficiently.
-            if (m_scoreManager != null)
+            if (this.m_scoreManager != null)
             {
-                m_scoreManager.ScoreChanged.AddListener(HandleScoreChanged);
+                this.m_scoreManager.ScoreChanged.AddListener(HandleScoreChanged);
             }
         }
 
         private void OnDisable()
         {
             // Unsubscribe to prevent memory leaks.
-            if (m_scoreManager != null)
+            if (this.m_scoreManager != null)
             {
-                m_scoreManager.ScoreChanged.RemoveListener(HandleScoreChanged);
+                this.m_scoreManager.ScoreChanged.RemoveListener(HandleScoreChanged);
             }
         }
 
@@ -66,9 +66,9 @@ namespace Workshop.Session3.GameFlow
         private void InitializeWinCondition()
         {
             // Count every Collectible active in the scene at game start.
-            m_totalCollectibles = FindObjectsByType<Collectible>(FindObjectsSortMode.None).Length;
+            this.m_totalCollectibles = FindObjectsByType<Collectible>(FindObjectsSortMode.None).Length;
 
-            Debug.Log($"Win Condition: tracking {m_totalCollectibles} collectibles.");
+            Debug.Log($"Win Condition: tracking {this.m_totalCollectibles} collectibles.");
             
             // If there are no collectibles at start, check for immediate win? 
             // Usually we expect at least one.
@@ -80,7 +80,7 @@ namespace Workshop.Session3.GameFlow
         /// <param name="currentScore">The new score value.</param>
         private void HandleScoreChanged(int currentScore)
         {
-            if (m_hasWon)
+            if (this.m_hasWon)
             {
                 return;
             }
@@ -96,7 +96,7 @@ namespace Workshop.Session3.GameFlow
             // Check if any Collectibles remain in the scene.
             int remaining = FindObjectsByType<Collectible>(FindObjectsSortMode.None).Length;
 
-            if (remaining == 0 && m_totalCollectibles > 0)
+            if (remaining == 0 && this.m_totalCollectibles > 0)
             {
                 TriggerWin();
             }
@@ -107,14 +107,14 @@ namespace Workshop.Session3.GameFlow
         /// </summary>
         private void TriggerWin()
         {
-            m_hasWon = true;
+            this.m_hasWon = true;
 
-            if (m_timerToStop != null)
+            if (this.m_timerToStop != null)
             {
-                m_timerToStop.StopTimer();
+                this.m_timerToStop.StopTimer();
             }
 
-            m_allCollected?.Invoke();
+            this.m_allCollected?.Invoke();
         }
         #endregion
     }

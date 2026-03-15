@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Platforms
+namespace WorkshopBehaviours.Session3.Platforms
 {
     /// <summary>
     /// Moves a platform up and down along the Y axis using a sine wave.
@@ -32,20 +32,20 @@ namespace Workshop.Session3.Platforms
         private void Awake()
         {
             // Cache once in Awake — never call GetComponent in Update.
-            _rb = GetComponent<Rigidbody>();
-            _startPosition = transform.position;
+            this._rb = GetComponent<Rigidbody>();
+            this._startPosition = transform.position;
         }
 
         private void FixedUpdate()
         {
             // Sine wave offset on the Y axis
-            float   yOffset = Mathf.Sin(Time.time * moveSpeed) * moveHeight;
-            Vector3 target  = _startPosition + new Vector3(0f, yOffset, 0f);
+            float   yOffset = Mathf.Sin(Time.time * this.moveSpeed) * this.moveHeight;
+            Vector3 target  = this._startPosition + new Vector3(0f, yOffset, 0f);
 
             // MovePosition informs the physics engine of the intended position
             // before collision resolution, so objects standing on the platform
             // move with it rather than sliding off.
-            _rb.MovePosition(target);
+            this._rb.MovePosition(target);
         }
     }
 }

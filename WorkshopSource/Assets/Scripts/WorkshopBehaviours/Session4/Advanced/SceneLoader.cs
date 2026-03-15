@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Workshop.Session4.Advanced
+namespace WorkshopBehaviours.Session4.Advanced
 {
     /// <summary>
     /// Provides scene-loading methods that can be wired to UI Button OnClick events
@@ -59,9 +59,9 @@ namespace Workshop.Session4.Advanced
         /// <param name="index">Target build index.</param>
         private async void LoadSceneAsync(int index)
         {
-            if (m_loadDelayInSeconds > 0)
+            if (this.m_loadDelayInSeconds > 0)
             {
-                await Awaitable.WaitForSecondsAsync(m_loadDelayInSeconds, destroyCancellationToken);
+                await Awaitable.WaitForSecondsAsync(this.m_loadDelayInSeconds, destroyCancellationToken);
             }
 
             ResetTimeAndLoad(index);
@@ -73,9 +73,9 @@ namespace Workshop.Session4.Advanced
         /// <param name="sceneName">Target scene name.</param>
         private async void LoadSceneByNameAsync(string sceneName)
         {
-            if (m_loadDelayInSeconds > 0)
+            if (this.m_loadDelayInSeconds > 0)
             {
-                await Awaitable.WaitForSecondsAsync(m_loadDelayInSeconds, destroyCancellationToken);
+                await Awaitable.WaitForSecondsAsync(this.m_loadDelayInSeconds, destroyCancellationToken);
             }
 
             ResetTimeAndLoad(sceneName);

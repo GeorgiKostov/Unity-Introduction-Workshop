@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Adds points to the global ScoreManager when picked up by the player.
@@ -16,7 +16,7 @@ namespace Workshop.Session2_New
             {
                 if (ScoreManager.Instance != null)
                 {
-                    ScoreManager.Instance.AddScore(pointValue);
+                    ScoreManager.Instance.AddScore(this.pointValue);
                     Destroy(gameObject);
                 }
                 else

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Hazards
+namespace WorkshopBehaviours.Session3.Hazards
 {
     /// <summary>
     /// Rotates a GameObject back and forth around a chosen axis.
@@ -32,7 +32,7 @@ namespace Workshop.Session3.Hazards
         private void Start()
         {
             // Cache the initial rotation state.
-            m_initialRotation = transform.localRotation;
+            this.m_initialRotation = transform.localRotation;
         }
 
         private void FixedUpdate()
@@ -49,10 +49,10 @@ namespace Workshop.Session3.Hazards
         {
             // Sin oscillates between -1 and +1.
             float angle = Mathf.Sin(
-                (Time.time * m_swingSpeed * Mathf.PI * 2f) + m_phaseOffset
-            ) * m_swingAngle;
+                (Time.time * this.m_swingSpeed * Mathf.PI * 2f) + this.m_phaseOffset
+            ) * this.m_swingAngle;
 
-            transform.localRotation = m_initialRotation * Quaternion.AngleAxis(angle, m_swingAxis);
+            transform.localRotation = this.m_initialRotation * Quaternion.AngleAxis(angle, this.m_swingAxis);
         }
         #endregion
     }

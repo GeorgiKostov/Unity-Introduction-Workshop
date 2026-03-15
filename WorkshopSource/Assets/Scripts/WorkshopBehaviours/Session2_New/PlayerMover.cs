@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Moves the player relative to the camera direction.
@@ -16,8 +16,8 @@ namespace Workshop.Session2_New
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody>();
-            if (cameraTransform == null)
+            this.rb = GetComponent<Rigidbody>();
+            if (this.cameraTransform == null)
             {
                 Debug.LogWarning("PlayerMover: cameraTransform is not assigned. Please assign the Main Camera in the Inspector.");
             }
@@ -25,26 +25,26 @@ namespace Workshop.Session2_New
 
         private void FixedUpdate()
         {
-            if (cameraTransform == null) return;
+            if (this.cameraTransform == null) return;
 
             float horizontal = Input.GetAxisRaw("Horizontal");
             float vertical = Input.GetAxisRaw("Vertical");
 
             // Project camera forward onto horizontal plane
-            Vector3 camForward = cameraTransform.forward;
+            Vector3 camForward = this.cameraTransform.forward;
             camForward.y = 0;
             camForward.Normalize();
 
-            Vector3 camRight = cameraTransform.right;
+            Vector3 camRight = this.cameraTransform.right;
             camRight.y = 0;
             camRight.Normalize();
 
             // Calculate movement direction
             Vector3 moveDirection = (camForward * vertical + camRight * horizontal).normalized;
-            Vector3 targetVelocity = moveDirection * moveSpeed;
+            Vector3 targetVelocity = moveDirection * this.moveSpeed;
 
             // Apply velocity while preserving gravity
-            rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
+            this.rb.linearVelocity = new Vector3(targetVelocity.x, this.rb.linearVelocity.y, targetVelocity.z);
         }
     }
 }

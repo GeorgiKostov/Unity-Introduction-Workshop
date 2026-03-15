@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
-using Workshop.Session2_New;
-using Workshop.Session3.Feedback;
-using Workshop.Session3.Platforms;
+using WorkshopBehaviours.Session2_New;
+using WorkshopBehaviours.Session3.Feedback;
+using WorkshopBehaviours.Session3.Platforms;
 
 /// <summary>
 /// Builds the Session 3 showcase scene — a simple platformer that demonstrates

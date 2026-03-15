@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Experiments.Cameras
+namespace WorkshopBehaviours.Experiments.Cameras
 {
     /// <summary>
     /// A side-view camera that remains completely stationary until the target 
@@ -36,57 +36,57 @@ namespace Workshop.Experiments.Cameras
         #region MonoBehaviour Methods
         private void Start()
         {
-            if (m_camera == null)
+            if (this.m_camera == null)
             {
-                m_camera = GetComponent<Camera>();
+                this.m_camera = GetComponent<Camera>();
             }
 
             // Initialize position target exactly at the follow offset relative to the player
-            if (m_target != null)
+            if (this.m_target != null)
             {
-                m_targetPosition = m_target.position + m_followOffset;
-                transform.position = m_targetPosition;
+                this.m_targetPosition = this.m_target.position + this.m_followOffset;
+                transform.position = this.m_targetPosition;
             }
             else
             {
-                m_targetPosition = transform.position;
+                this.m_targetPosition = transform.position;
             }
         }
 
         private void LateUpdate()
         {
-            if (m_target == null || m_camera == null)
+            if (this.m_target == null || this.m_camera == null)
             {
                 return;
             }
 
             // If the camera is currently moving to recenter, continue the lerp until it arrives.
-            if (m_isTransitioning)
+            if (this.m_isTransitioning)
             {
-                transform.position = Vector3.Lerp(transform.position, m_targetPosition, Time.deltaTime * m_lerpSpeed);
+                transform.position = Vector3.Lerp(transform.position, this.m_targetPosition, Time.deltaTime * this.m_lerpSpeed);
                 
                 // Snap to target if very close to prevent infinite micro-lerping
-                if (Vector3.Distance(transform.position, m_targetPosition) < 0.05f)
+                if (Vector3.Distance(transform.position, this.m_targetPosition) < 0.05f)
                 {
-                    transform.position = m_targetPosition;
-                    m_isTransitioning = false;
+                    transform.position = this.m_targetPosition;
+                    this.m_isTransitioning = false;
                 }
                 return;
             }
 
             // Check if the target has exited the established frustum bounds.
-            Vector3 viewportPos = m_camera.WorldToViewportPoint(m_target.position);
+            Vector3 viewportPos = this.m_camera.WorldToViewportPoint(this.m_target.position);
             
-            bool isOutsideBounds = viewportPos.x < m_edgeThreshold || 
-                                   viewportPos.x > (1f - m_edgeThreshold) ||
-                                   viewportPos.y < m_edgeThreshold || 
-                                   viewportPos.y > (1f - m_edgeThreshold);
+            bool isOutsideBounds = viewportPos.x < this.m_edgeThreshold || 
+                                   viewportPos.x > (1f - this.m_edgeThreshold) ||
+                                   viewportPos.y < this.m_edgeThreshold || 
+                                   viewportPos.y > (1f - this.m_edgeThreshold);
 
             if (isOutsideBounds)
             {
                 // Calculate the new static destination for the camera.
-                m_targetPosition = m_target.position + m_followOffset;
-                m_isTransitioning = true;
+                this.m_targetPosition = this.m_target.position + this.m_followOffset;
+                this.m_isTransitioning = true;
             }
         }
         #endregion

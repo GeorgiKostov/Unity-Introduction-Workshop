@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Movement
+namespace WorkshopBehaviours.Session2.Movement
 {
     /// <summary>
     /// Allows the player to jump when pressing Space.
@@ -40,7 +40,7 @@ namespace Workshop.Session2.Movement
         private void Awake()
         {
             // Cache reference to the Rigidbody component.
-            m_rigidbody = GetComponent<Rigidbody>();
+            this.m_rigidbody = GetComponent<Rigidbody>();
         }
 
         private void Update()
@@ -49,17 +49,17 @@ namespace Workshop.Session2.Movement
             // GetButtonDown only fires once per key press — perfect for jumping.
             if (Input.GetButtonDown(k_jumpButton) && IsGrounded())
             {
-                m_isJumpRequested = true;
+                this.m_isJumpRequested = true;
             }
         }
 
         private void FixedUpdate()
         {
             // Apply physics movement in FixedUpdate.
-            if (m_isJumpRequested)
+            if (this.m_isJumpRequested)
             {
                 ApplyJump();
-                m_isJumpRequested = false;
+                this.m_isJumpRequested = false;
             }
 
             ApplyGravityModifiers();
@@ -71,7 +71,7 @@ namespace Workshop.Session2.Movement
             Gizmos.color = Color.green;
             Gizmos.DrawLine(
                 transform.position,
-                transform.position + Vector3.down * m_groundCheckDistance
+                transform.position + Vector3.down * this.m_groundCheckDistance
             );
         }
         #endregion
@@ -83,14 +83,14 @@ namespace Workshop.Session2.Movement
         private void ApplyJump()
         {
             // Reset Y velocity first so double-jumps don't stack.
-            m_rigidbody.linearVelocity = new Vector3(
-                m_rigidbody.linearVelocity.x, 
+            this.m_rigidbody.linearVelocity = new Vector3(
+                this.m_rigidbody.linearVelocity.x, 
                 0f, 
-                m_rigidbody.linearVelocity.z
+                this.m_rigidbody.linearVelocity.z
             );
 
             // Apply an instant upward force (Impulse mode ignores mass scaling).
-            m_rigidbody.AddForce(Vector3.up * m_jumpForce, ForceMode.Impulse);
+            this.m_rigidbody.AddForce(Vector3.up * this.m_jumpForce, ForceMode.Impulse);
         }
 
         /// <summary>
@@ -98,15 +98,15 @@ namespace Workshop.Session2.Movement
         /// </summary>
         private void ApplyGravityModifiers()
         {
-            if (m_rigidbody.linearVelocity.y < 0)
+            if (this.m_rigidbody.linearVelocity.y < 0)
             {
                 // Falling: apply heavier gravity to snap down quickly
-                m_rigidbody.linearVelocity += Vector3.up * Physics.gravity.y * (m_fallMultiplier - 1) * Time.fixedDeltaTime;
+                this.m_rigidbody.linearVelocity += Vector3.up * Physics.gravity.y * (this.m_fallMultiplier - 1) * Time.fixedDeltaTime;
             }
-            else if (m_rigidbody.linearVelocity.y > 0 && !Input.GetButton(k_jumpButton))
+            else if (this.m_rigidbody.linearVelocity.y > 0 && !Input.GetButton(k_jumpButton))
             {
                 // Rising but player released jump button early: apply heavier gravity for a short hop
-                m_rigidbody.linearVelocity += Vector3.up * Physics.gravity.y * (m_lowJumpMultiplier - 1) * Time.fixedDeltaTime;
+                this.m_rigidbody.linearVelocity += Vector3.up * Physics.gravity.y * (this.m_lowJumpMultiplier - 1) * Time.fixedDeltaTime;
             }
         }
 
@@ -119,8 +119,8 @@ namespace Workshop.Session2.Movement
             return Physics.Raycast(
                 transform.position,
                 Vector3.down,
-                m_groundCheckDistance,
-                m_groundLayer
+                this.m_groundCheckDistance,
+                this.m_groundLayer
             );
         }
         #endregion

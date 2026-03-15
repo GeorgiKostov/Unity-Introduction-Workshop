@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Handles jumping using a physics impulse.
@@ -18,12 +18,12 @@ namespace Workshop.Session2_New
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody>();
+            this.rb = GetComponent<Rigidbody>();
         }
 
         private void Start()
         {
-            if (groundLayer.value == 0)
+            if (this.groundLayer.value == 0)
             {
                 Debug.LogWarning("PlayerJumper: groundLayer has no layers selected. The player will never be able to jump.");
             }
@@ -33,14 +33,14 @@ namespace Workshop.Session2_New
         {
             if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
-                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+                this.rb.AddForce(Vector3.up * this.jumpForce, ForceMode.Impulse);
             }
         }
 
         private bool IsGrounded()
         {
             // SphereCast down to detect ground reliably
-            return Physics.SphereCast(transform.position, groundCheckRadius, Vector3.down, out _, groundCheckDistance, groundLayer);
+            return Physics.SphereCast(transform.position, this.groundCheckRadius, Vector3.down, out _, this.groundCheckDistance, this.groundLayer);
         }
     }
 }

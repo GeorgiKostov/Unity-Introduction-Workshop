@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Feedback
+namespace WorkshopBehaviours.Session3.Feedback
 {
     /// <summary>
     /// Plays an audio clip when the Player enters this trigger zone.
@@ -26,13 +26,13 @@ namespace Workshop.Session3.Feedback
         private void OnTriggerEnter(Collider other)
         {
             // Only react to the player.
-            if (!other.CompareTag(Workshop.Tags.Player))
+            if (!other.CompareTag(Tags.Player))
             {
                 return;
             }
 
             // Check if we already played and it's a one-time trigger.
-            if (m_isSinglePlay && m_hasPlayed)
+            if (this.m_isSinglePlay && this.m_hasPlayed)
             {
                 return;
             }
@@ -47,13 +47,13 @@ namespace Workshop.Session3.Feedback
         /// </summary>
         private void PlaySound()
         {
-            if (m_audioClip == null)
+            if (this.m_audioClip == null)
             {
                 return;
             }
 
-            AudioSource.PlayClipAtPoint(m_audioClip, transform.position, m_volume);
-            m_hasPlayed = true;
+            AudioSource.PlayClipAtPoint(this.m_audioClip, transform.position, this.m_volume);
+            this.m_hasPlayed = true;
         }
         #endregion
     }

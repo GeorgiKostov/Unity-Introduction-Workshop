@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Applies a continuous physics force to the player
@@ -16,14 +16,14 @@ namespace Workshop.Session2_New
         private void Awake()
         {
             // Normalize so only the direction drives the push, magnitude is handled by pushForce
-            pushDirection.Normalize();
+            this.pushDirection.Normalize();
         }
 
         private void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Player"))
             {
-                playerRb = other.GetComponent<Rigidbody>();
+                this.playerRb = other.GetComponent<Rigidbody>();
             }
         }
 
@@ -31,15 +31,15 @@ namespace Workshop.Session2_New
         {
             if (other.CompareTag("Player"))
             {
-                playerRb = null;
+                this.playerRb = null;
             }
         }
 
         private void FixedUpdate()
         {
-            if (playerRb != null)
+            if (this.playerRb != null)
             {
-                playerRb.AddForce(pushDirection * pushForce, ForceMode.Force);
+                this.playerRb.AddForce(this.pushDirection * this.pushForce, ForceMode.Force);
             }
         }
     }

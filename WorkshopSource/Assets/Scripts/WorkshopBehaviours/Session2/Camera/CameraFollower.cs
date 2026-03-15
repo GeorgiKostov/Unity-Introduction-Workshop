@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Camera
+namespace WorkshopBehaviours.Session2.Camera
 {
     /// <summary>
     /// Smoothly follows a target Transform at a fixed offset.
@@ -26,7 +26,7 @@ namespace Workshop.Session2.Camera
         private void LateUpdate()
         {
             // LateUpdate runs after all Updates — ensures player has moved first.
-            if (m_target == null)
+            if (this.m_target == null)
             {
                 return;
             }
@@ -41,17 +41,17 @@ namespace Workshop.Session2.Camera
         /// </summary>
         private void ApplyFollow()
         {
-            Vector3 desiredPosition = m_target.position + m_offset;
+            Vector3 desiredPosition = this.m_target.position + this.m_offset;
 
             // Lerp gradually moves from current position toward the desired position.
             transform.position = Vector3.Lerp(
                 transform.position,
                 desiredPosition,
-                m_smoothSpeed
+                this.m_smoothSpeed
             );
 
             // Always look at the player.
-            transform.LookAt(m_target);
+            transform.LookAt(this.m_target);
         }
         #endregion
     }

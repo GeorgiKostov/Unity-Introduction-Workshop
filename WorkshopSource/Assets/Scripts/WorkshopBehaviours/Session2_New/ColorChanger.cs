@@ -1,7 +1,7 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Changes the player's material color on trigger entry,
@@ -29,9 +29,9 @@ namespace Workshop.Session2_New
         private IEnumerator ResetColorRoutine(Renderer targetRenderer)
         {
             Color originalColor = targetRenderer.material.color;
-            targetRenderer.material.color = targetColor;
+            targetRenderer.material.color = this.targetColor;
 
-            yield return new WaitForSeconds(resetDelay);
+            yield return new WaitForSeconds(this.resetDelay);
 
             targetRenderer.material.color = originalColor;
         }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Experiments.Cameras
+namespace WorkshopBehaviours.Experiments.Cameras
 {
     /// <summary>
     /// Maintains a fixed offset from the target and follows smoothly.
@@ -24,20 +24,20 @@ namespace Workshop.Experiments.Cameras
         #region MonoBehaviour Methods
         private void LateUpdate()
         {
-            if (m_target == null)
+            if (this.m_target == null)
             {
                 return;
             }
 
             // Calculate target position based on offset
-            Vector3 targetPosition = m_target.position + m_offset;
+            Vector3 targetPosition = this.m_target.position + this.m_offset;
 
             // Smoothly move the camera to that position
             transform.position = Vector3.SmoothDamp(
                 transform.position, 
                 targetPosition, 
-                ref m_currentVelocity, 
-                m_smoothTime
+                ref this.m_currentVelocity, 
+                this.m_smoothTime
             );
         }
         #endregion

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Polish
+namespace WorkshopBehaviours.Session4.Polish
 {
     /// <summary>
     /// Pulses a GameObject's material color between two colors.
@@ -26,13 +26,13 @@ namespace Workshop.Session4.Polish
         private void Awake()
         {
             // Cache reference to the MeshRenderer.
-            m_meshRenderer = GetComponent<MeshRenderer>();
+            this.m_meshRenderer = GetComponent<MeshRenderer>();
 
             // Accessing .material creates a private instance of the material.
             // This prevents changing the shared asset in the Project project.
-            if (m_meshRenderer != null)
+            if (this.m_meshRenderer != null)
             {
-                m_materialInstance = m_meshRenderer.material;
+                this.m_materialInstance = this.m_meshRenderer.material;
             }
         }
 
@@ -44,9 +44,9 @@ namespace Workshop.Session4.Polish
         private void OnDestroy()
         {
             // Clean up the material instance when the object is destroyed to prevent memory leaks.
-            if (m_materialInstance != null)
+            if (this.m_materialInstance != null)
             {
-                Destroy(m_materialInstance);
+                Destroy(this.m_materialInstance);
             }
         }
         #endregion
@@ -57,14 +57,14 @@ namespace Workshop.Session4.Polish
         /// </summary>
         private void ApplyPulse()
         {
-            if (m_materialInstance == null)
+            if (this.m_materialInstance == null)
             {
                 return;
             }
 
             // Convert sin (-1 to 1) to a 0-to-1 range using * 0.5 + 0.5.
-            float t = Mathf.Sin(Time.time * m_pulseSpeed * Mathf.PI * 2f) * 0.5f + 0.5f;
-            m_materialInstance.color = Color.Lerp(m_colorA, m_colorB, t);
+            float t = Mathf.Sin(Time.time * this.m_pulseSpeed * Mathf.PI * 2f) * 0.5f + 0.5f;
+            this.m_materialInstance.color = Color.Lerp(this.m_colorA, this.m_colorB, t);
         }
         #endregion
     }

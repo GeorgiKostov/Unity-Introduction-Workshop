@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Workshop.Session2.Collectibles
+namespace WorkshopBehaviours.Session2.Collectibles
 {
     /// <summary>
     /// Tracks the player's score and notifies listeners when it changes.
@@ -21,9 +21,9 @@ namespace Workshop.Session2.Collectibles
         #endregion
 
         #region Properties
-        public int CurrentScore => m_currentScore;
+        public int CurrentScore => this.m_currentScore;
         
-        public UnityEvent<int> ScoreChanged => m_scoreChanged;
+        public UnityEvent<int> ScoreChanged => this.m_scoreChanged;
         #endregion
 
         #region Public Methods
@@ -33,12 +33,12 @@ namespace Workshop.Session2.Collectibles
         /// <param name="amount">Number of points to add.</param>
         public void AddScore(int amount)
         {
-            m_currentScore += amount;
+            this.m_currentScore += amount;
             
-            Debug.Log($"Score updated: {m_currentScore}");
+            Debug.Log($"Score updated: {this.m_currentScore}");
 
             // Notify all listeners through the UnityEvent.
-            OnScoreChanged(m_currentScore);
+            OnScoreChanged(this.m_currentScore);
         }
 
         /// <summary>
@@ -46,8 +46,8 @@ namespace Workshop.Session2.Collectibles
         /// </summary>
         public void ResetScore()
         {
-            m_currentScore = 0;
-            OnScoreChanged(m_currentScore);
+            this.m_currentScore = 0;
+            OnScoreChanged(this.m_currentScore);
         }
         #endregion
 
@@ -58,7 +58,7 @@ namespace Workshop.Session2.Collectibles
         /// <param name="newScore">The current score after modification.</param>
         private void OnScoreChanged(int newScore)
         {
-            m_scoreChanged?.Invoke(newScore);
+            this.m_scoreChanged?.Invoke(newScore);
         }
         #endregion
     }

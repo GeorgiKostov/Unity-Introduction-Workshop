@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Workshop.Session3.GameFlow
+namespace WorkshopBehaviours.Session3.GameFlow
 {
     /// <summary>
     /// Counts down from a set time in seconds.
@@ -28,13 +28,13 @@ namespace Workshop.Session3.GameFlow
         #endregion
 
         #region Properties
-        public bool IsTimerActive => m_isTimerActive;
+        public bool IsTimerActive => this.m_isTimerActive;
         
-        public float TimeRemaining => m_timeRemaining;
+        public float TimeRemaining => this.m_timeRemaining;
 
-        public UnityEvent TimerExpired => m_timerExpired;
+        public UnityEvent TimerExpired => this.m_timerExpired;
 
-        public UnityEvent<int> TimerTicked => m_timerTicked;
+        public UnityEvent<int> TimerTicked => this.m_timerTicked;
         #endregion
 
         #region MonoBehaviour Methods
@@ -45,7 +45,7 @@ namespace Workshop.Session3.GameFlow
 
         private void Update()
         {
-            if (!m_isTimerActive)
+            if (!this.m_isTimerActive)
             {
                 return;
             }
@@ -60,7 +60,7 @@ namespace Workshop.Session3.GameFlow
         /// </summary>
         public void StopTimer()
         {
-            m_isTimerActive = false;
+            this.m_isTimerActive = false;
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Workshop.Session3.GameFlow
         /// </summary>
         public void StartTimer()
         {
-            m_isTimerActive = true;
+            this.m_isTimerActive = true;
         }
 
         /// <summary>
@@ -86,9 +86,9 @@ namespace Workshop.Session3.GameFlow
         /// </summary>
         private void InitializeTimer()
         {
-            m_timeRemaining = m_startTime;
-            m_isTimerActive = true;
-            m_lastTickSecond = Mathf.CeilToInt(m_timeRemaining);
+            this.m_timeRemaining = this.m_startTime;
+            this.m_isTimerActive = true;
+            this.m_lastTickSecond = Mathf.CeilToInt(this.m_timeRemaining);
         }
 
         /// <summary>
@@ -96,22 +96,22 @@ namespace Workshop.Session3.GameFlow
         /// </summary>
         private void UpdateTimer()
         {
-            m_timeRemaining -= Time.deltaTime;
+            this.m_timeRemaining -= Time.deltaTime;
 
             // Fire a tick event each time a whole second passes.
-            int currentSecond = Mathf.CeilToInt(m_timeRemaining);
+            int currentSecond = Mathf.CeilToInt(this.m_timeRemaining);
             
-            if (currentSecond != m_lastTickSecond)
+            if (currentSecond != this.m_lastTickSecond)
             {
-                m_lastTickSecond = currentSecond;
+                this.m_lastTickSecond = currentSecond;
                 OnTimerTicked(Mathf.Max(0, currentSecond));
             }
 
             // Check if the timer has run out.
-            if (m_timeRemaining <= 0f)
+            if (this.m_timeRemaining <= 0f)
             {
-                m_timeRemaining = 0f;
-                m_isTimerActive = false;
+                this.m_timeRemaining = 0f;
+                this.m_isTimerActive = false;
                 OnTimerExpired();
             }
         }
@@ -122,7 +122,7 @@ namespace Workshop.Session3.GameFlow
         /// <param name="secondsRemaining">Whole seconds left on the clock.</param>
         private void OnTimerTicked(int secondsRemaining)
         {
-            m_timerTicked?.Invoke(secondsRemaining);
+            this.m_timerTicked?.Invoke(secondsRemaining);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Workshop.Session3.GameFlow
         /// </summary>
         private void OnTimerExpired()
         {
-            m_timerExpired?.Invoke();
+            this.m_timerExpired?.Invoke();
         }
         #endregion
     }

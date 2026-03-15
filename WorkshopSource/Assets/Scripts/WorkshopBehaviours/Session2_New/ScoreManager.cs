@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Singleton manager that tracks the player's score globally.
@@ -30,8 +30,8 @@ namespace Workshop.Session2_New
 
         public void AddScore(int amount)
         {
-            score += amount;
-            OnScoreChanged?.Invoke(score);
+            this.score += amount;
+            this.OnScoreChanged?.Invoke(this.score);
         }
     }
 }

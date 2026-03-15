@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Camera
+namespace WorkshopBehaviours.Session2.Camera
 {
     /// <summary>
     /// Orbits around a target using right-click + mouse drag.
@@ -53,7 +53,7 @@ namespace Workshop.Session2.Camera
 
         private void LateUpdate()
         {
-            if (m_target == null)
+            if (this.m_target == null)
             {
                 return;
             }
@@ -70,15 +70,15 @@ namespace Workshop.Session2.Camera
         /// </summary>
         private void HandleInput()
         {
-            m_isOrbiting = Input.GetMouseButton(k_rightMouseButton);
+            this.m_isOrbiting = Input.GetMouseButton(k_rightMouseButton);
             
-            if (m_isOrbiting)
+            if (this.m_isOrbiting)
             {
-                m_mouseXInput = Input.GetAxis(k_mouseXAxis);
-                m_mouseYInput = Input.GetAxis(k_mouseYAxis);
+                this.m_mouseXInput = Input.GetAxis(k_mouseXAxis);
+                this.m_mouseYInput = Input.GetAxis(k_mouseYAxis);
             }
             
-            m_scrollInput = Input.GetAxis(k_scrollWheelAxis);
+            this.m_scrollInput = Input.GetAxis(k_scrollWheelAxis);
         }
 
         /// <summary>
@@ -86,14 +86,14 @@ namespace Workshop.Session2.Camera
         /// </summary>
         private void ApplyOrbit()
         {
-            if (!m_isOrbiting)
+            if (!this.m_isOrbiting)
             {
                 return;
             }
 
-            m_yaw += m_mouseXInput * m_orbitSpeed;
-            m_pitch -= m_mouseYInput * m_orbitSpeed;
-            m_pitch = Mathf.Clamp(m_pitch, m_verticalClamp.x, m_verticalClamp.y);
+            this.m_yaw += this.m_mouseXInput * this.m_orbitSpeed;
+            this.m_pitch -= this.m_mouseYInput * this.m_orbitSpeed;
+            this.m_pitch = Mathf.Clamp(this.m_pitch, this.m_verticalClamp.x, this.m_verticalClamp.y);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace Workshop.Session2.Camera
         /// </summary>
         private void ApplyZoom()
         {
-            m_distance -= m_scrollInput * m_zoomSpeed;
-            m_distance = Mathf.Clamp(m_distance, m_zoomClamp.x, m_zoomClamp.y);
+            this.m_distance -= this.m_scrollInput * this.m_zoomSpeed;
+            this.m_distance = Mathf.Clamp(this.m_distance, this.m_zoomClamp.x, this.m_zoomClamp.y);
         }
 
         /// <summary>
@@ -111,9 +111,9 @@ namespace Workshop.Session2.Camera
         private void UpdateTransform()
         {
             // Calculate camera position from angles and distance.
-            Quaternion rotation = Quaternion.Euler(m_pitch, m_yaw, 0f);
-            transform.position = m_target.position - rotation * Vector3.forward * m_distance;
-            transform.LookAt(m_target.position);
+            Quaternion rotation = Quaternion.Euler(this.m_pitch, this.m_yaw, 0f);
+            transform.position = this.m_target.position - rotation * Vector3.forward * this.m_distance;
+            transform.LookAt(this.m_target.position);
         }
         #endregion
     }

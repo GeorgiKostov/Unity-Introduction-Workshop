@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2_New
+namespace WorkshopBehaviours.Session2_New
 {
     /// <summary>
     /// Respawns the player if they fall below a certain height threshold.
@@ -16,12 +16,12 @@ namespace Workshop.Session2_New
 
         private void Awake()
         {
-            rb = GetComponent<Rigidbody>();
+            this.rb = GetComponent<Rigidbody>();
         }
 
         private void Start()
         {
-            if (spawnPoint == null)
+            if (this.spawnPoint == null)
             {
                 Debug.LogWarning("PlayerRespawner: spawnPoint is null. Respawn will not work.");
             }
@@ -29,7 +29,7 @@ namespace Workshop.Session2_New
 
         private void Update()
         {
-            if (transform.position.y < fallThreshold)
+            if (transform.position.y < this.fallThreshold)
             {
                 Respawn();
             }
@@ -37,10 +37,10 @@ namespace Workshop.Session2_New
 
         public void Respawn()
         {
-            if (spawnPoint == null) return;
+            if (this.spawnPoint == null) return;
 
-            transform.position = spawnPoint.position;
-            rb.linearVelocity = Vector3.zero;
+            transform.position = this.spawnPoint.position;
+            this.rb.linearVelocity = Vector3.zero;
         }
     }
 }

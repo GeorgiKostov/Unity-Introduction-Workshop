@@ -23,6 +23,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using WorkshopBehaviours.Session4.Advanced;
 
 public class Session1Builder
 {
@@ -412,8 +413,8 @@ public class Session1Builder
     {
         // GameManager – hosts the SceneLoader used by the button
         GameObject gm = new GameObject("GameManager");
-        Workshop.Session4.Advanced.SceneLoader loader =
-            gm.AddComponent<Workshop.Session4.Advanced.SceneLoader>();
+        SceneLoader loader =
+            gm.AddComponent<SceneLoader>();
 
         // Canvas
         GameObject canvasGo = new GameObject("Canvas");

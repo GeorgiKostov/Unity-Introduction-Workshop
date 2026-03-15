@@ -1,7 +1,7 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
-namespace Workshop.Session2.UI
+namespace WorkshopBehaviours.Session2.UI
 {
     /// <summary>
     /// Updates a TextMeshPro label whenever the score changes.
@@ -22,7 +22,7 @@ namespace Workshop.Session2.UI
         private void Awake()
         {
             // Cache reference to the Text component.
-            m_scoreText = GetComponent<TextMeshProUGUI>();
+            this.m_scoreText = GetComponent<TextMeshProUGUI>();
             
             // Set initial state.
             UpdateScoreText(0);
@@ -37,12 +37,12 @@ namespace Workshop.Session2.UI
         /// <param name="newScore">The new score value to display.</param>
         public void UpdateScoreText(int newScore)
         {
-            if (m_scoreText == null)
+            if (this.m_scoreText == null)
             {
                 return;
             }
 
-            m_scoreText.text = $"{m_prefix}{newScore}";
+            this.m_scoreText.text = $"{this.m_prefix}{newScore}";
         }
         #endregion
     }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Polish
+namespace WorkshopBehaviours.Session4.Polish
 {
     /// <summary>
     /// Shakes the camera by randomising its local position offset.
@@ -50,8 +50,8 @@ namespace Workshop.Session4.Polish
         public async void Shake(float duration = -1f, float magnitude = -1f)
         {
             // Use defaults if caller doesn't specify.
-            float targetDuration = duration < 0f ? m_defaultDuration : duration;
-            float targetMagnitude = magnitude < 0f ? m_defaultMagnitude : magnitude;
+            float targetDuration = duration < 0f ? this.m_defaultDuration : duration;
+            float targetMagnitude = magnitude < 0f ? this.m_defaultMagnitude : magnitude;
 
             // We use the Awaitable API to handle the shake sequence.
             await ShakeAsync(targetDuration, targetMagnitude);
@@ -71,7 +71,7 @@ namespace Workshop.Session4.Polish
             }
             
             s_instance = this;
-            m_originalLocalPosition = transform.localPosition;
+            this.m_originalLocalPosition = transform.localPosition;
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Workshop.Session4.Polish
             // If already shaking, we can either return or override. 
             // Current implementation allows multiple calls to overlap but using Awaitable 
             // keeps it simpler than StopAllCoroutines.
-            m_isShaking = true;
+            this.m_isShaking = true;
             float elapsed = 0f;
 
             while (elapsed < duration)
@@ -102,7 +102,7 @@ namespace Workshop.Session4.Polish
                 Vector3 offset = Random.insideUnitSphere * strength;
 
                 // Only shake on X and Y to avoid depth issues.
-                transform.localPosition = m_originalLocalPosition + new Vector3(offset.x, offset.y, 0f);
+                transform.localPosition = this.m_originalLocalPosition + new Vector3(offset.x, offset.y, 0f);
 
                 // Wait for the next frame.
                 await Awaitable.NextFrameAsync(destroyCancellationToken);
@@ -111,8 +111,8 @@ namespace Workshop.Session4.Polish
             // Restore exact original position once shake ends.
             if (this != null)
             {
-                transform.localPosition = m_originalLocalPosition;
-                m_isShaking = false;
+                transform.localPosition = this.m_originalLocalPosition;
+                this.m_isShaking = false;
             }
         }
         #endregion

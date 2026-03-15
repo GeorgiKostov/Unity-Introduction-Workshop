@@ -1,8 +1,7 @@
 using UnityEngine;
-using Workshop.Session2.Movement;
-using Workshop.Session3.GameFlow;
+using WorkshopBehaviours.Session2.Movement;
 
-namespace Workshop.Session3.Hazards
+namespace WorkshopBehaviours.Session3.Hazards
 {
     /// <summary>
     /// Detects when the Player enters a trigger zone and tells the
@@ -24,7 +23,7 @@ namespace Workshop.Session3.Hazards
         private void OnTriggerEnter(Collider other)
         {
             // Only react to objects tagged as Player.
-            if (!other.CompareTag(Workshop.Tags.Player))
+            if (!other.CompareTag(Tags.Player))
             {
                 return;
             }
@@ -41,15 +40,15 @@ namespace Workshop.Session3.Hazards
         private void HandleHazardContact(GameObject playerObject)
         {
             // Spawn optional effect at player position.
-            if (m_hitEffectPrefab != null)
+            if (this.m_hitEffectPrefab != null)
             {
-                Instantiate(m_hitEffectPrefab, playerObject.transform.position, Quaternion.identity);
+                Instantiate(this.m_hitEffectPrefab, playerObject.transform.position, Quaternion.identity);
             }
 
             // Play optional sound at player position.
-            if (m_hitSoundClip != null)
+            if (this.m_hitSoundClip != null)
             {
-                AudioSource.PlayClipAtPoint(m_hitSoundClip, playerObject.transform.position);
+                AudioSource.PlayClipAtPoint(this.m_hitSoundClip, playerObject.transform.position);
             }
 
             // Ask the PlayerRespawner component on the player to respawn.

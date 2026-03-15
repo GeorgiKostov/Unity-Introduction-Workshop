@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Advanced
+namespace WorkshopBehaviours.Session4.Advanced
 {
     /// <summary>
     /// Keeps this GameObject alive across scene loads so music plays continuously.
@@ -42,11 +42,11 @@ namespace Workshop.Session4.Advanced
             s_instance = this;
 
             // Cache reference and ensure the music is playing.
-            m_audioSource = GetComponent<AudioSource>();
+            this.m_audioSource = GetComponent<AudioSource>();
             
-            if (m_audioSource != null && !m_audioSource.isPlaying)
+            if (this.m_audioSource != null && !this.m_audioSource.isPlaying)
             {
-                m_audioSource.Play();
+                this.m_audioSource.Play();
             }
 
             // Survive scene transitions.

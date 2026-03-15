@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session3.Movement
+namespace WorkshopBehaviours.Session3.Movement
 {
     /// <summary>
     /// Moves the player relative to the camera's viewing angle.
@@ -31,17 +31,17 @@ namespace Workshop.Session3.Movement
         #region Properties
         public float MoveSpeed
         {
-            get => m_moveSpeed;
-            set => m_moveSpeed = value;
+            get => this.m_moveSpeed;
+            set => this.m_moveSpeed = value;
         }
         #endregion
 
         #region MonoBehaviour Methods
         private void Awake()
         {
-            m_rigidbody = GetComponent<Rigidbody>();
-            m_rigidbody.freezeRotation = true;
-            m_mainCamera = Camera.main;
+            this.m_rigidbody = GetComponent<Rigidbody>();
+            this.m_rigidbody.freezeRotation = true;
+            this.m_mainCamera = Camera.main;
         }
 
         private void Update()
@@ -61,8 +61,8 @@ namespace Workshop.Session3.Movement
         /// </summary>
         private void HandleInput()
         {
-            m_horizontalInput = Input.GetAxisRaw(k_horizontalAxis);
-            m_verticalInput = Input.GetAxisRaw(k_verticalAxis);
+            this.m_horizontalInput = Input.GetAxisRaw(k_horizontalAxis);
+            this.m_verticalInput = Input.GetAxisRaw(k_verticalAxis);
         }
 
         /// <summary>
@@ -70,30 +70,30 @@ namespace Workshop.Session3.Movement
         /// </summary>
         private void ApplyMovement()
         {
-            if (m_mainCamera == null)
+            if (this.m_mainCamera == null)
             {
-                m_mainCamera = Camera.main;
-                if (m_mainCamera == null) return;
+                this.m_mainCamera = Camera.main;
+                if (this.m_mainCamera == null) return;
             }
 
             // Get camera forward and right vectors, flattened on the XZ plane
-            Vector3 camForward = m_mainCamera.transform.forward;
+            Vector3 camForward = this.m_mainCamera.transform.forward;
             camForward.y = 0f;
             camForward.Normalize();
 
-            Vector3 camRight = m_mainCamera.transform.right;
+            Vector3 camRight = this.m_mainCamera.transform.right;
             camRight.y = 0f;
             camRight.Normalize();
 
             // Calculate movement direction relative to camera
-            Vector3 direction = (camForward * m_verticalInput + camRight * m_horizontalInput).normalized;
+            Vector3 direction = (camForward * this.m_verticalInput + camRight * this.m_horizontalInput).normalized;
 
             // Apply velocity
-            Vector3 targetVelocity = direction * m_moveSpeed;
+            Vector3 targetVelocity = direction * this.m_moveSpeed;
             
-            m_rigidbody.linearVelocity = new Vector3(
+            this.m_rigidbody.linearVelocity = new Vector3(
                 targetVelocity.x,
-                m_rigidbody.linearVelocity.y, // Preserve vertical velocity (gravity/jump)
+                this.m_rigidbody.linearVelocity.y, // Preserve vertical velocity (gravity/jump)
                 targetVelocity.z
             );
 
@@ -101,7 +101,7 @@ namespace Workshop.Session3.Movement
             if (direction != Vector3.zero)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * m_rotationSpeed);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * this.m_rotationSpeed);
             }
         }
         #endregion

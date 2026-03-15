@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session2.Collectibles
+namespace WorkshopBehaviours.Session2.Collectibles
 {
     /// <summary>
     /// Makes a GameObject collectable.
@@ -23,7 +23,7 @@ namespace Workshop.Session2.Collectibles
         private void OnTriggerEnter(Collider other)
         {
             // Only react to the Player.
-            if (!other.CompareTag(Workshop.Tags.Player))
+            if (!other.CompareTag(Tags.Player))
             {
                 return;
             }
@@ -39,9 +39,9 @@ namespace Workshop.Session2.Collectibles
         private void Collect()
         {
             // Spawn optional visual effect at this position.
-            if (m_collectEffectPrefab != null)
+            if (this.m_collectEffectPrefab != null)
             {
-                Instantiate(m_collectEffectPrefab, transform.position, Quaternion.identity);
+                Instantiate(this.m_collectEffectPrefab, transform.position, Quaternion.identity);
             }
 
             // Tell the ScoreManager to add points.
@@ -50,7 +50,7 @@ namespace Workshop.Session2.Collectibles
             
             if (scoreManager != null)
             {
-                scoreManager.AddScore(m_pointValue);
+                scoreManager.AddScore(this.m_pointValue);
             }
 
             // Remove this object from the scene.

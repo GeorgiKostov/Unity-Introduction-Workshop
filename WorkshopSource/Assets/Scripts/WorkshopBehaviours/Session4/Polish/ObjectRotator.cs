@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Polish
+namespace WorkshopBehaviours.Session4.Polish
 {
     /// <summary>
     /// Rotates a GameObject continuously on any combination of axes.
@@ -32,10 +32,10 @@ namespace Workshop.Session4.Polish
         private void ApplyRotation()
         {
             transform.Rotate(
-                m_rotationSpeedX * Time.deltaTime,
-                m_rotationSpeedY * Time.deltaTime,
-                m_rotationSpeedZ * Time.deltaTime,
-                m_rotationSpace
+                this.m_rotationSpeedX * Time.deltaTime,
+                this.m_rotationSpeedY * Time.deltaTime,
+                this.m_rotationSpeedZ * Time.deltaTime,
+                this.m_rotationSpace
             );
         }
         #endregion

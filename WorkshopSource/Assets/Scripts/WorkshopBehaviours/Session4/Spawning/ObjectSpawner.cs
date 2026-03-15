@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Workshop.Session4.Spawning
+namespace WorkshopBehaviours.Session4.Spawning
 {
     /// <summary>
     /// Spawns a prefab at this object's position on a repeating interval.
@@ -42,11 +42,11 @@ namespace Workshop.Session4.Spawning
         /// </summary>
         private void UpdateSpawnTimer()
         {
-            m_spawnTimer += Time.deltaTime;
+            this.m_spawnTimer += Time.deltaTime;
 
-            if (m_spawnTimer >= m_spawnInterval)
+            if (this.m_spawnTimer >= this.m_spawnInterval)
             {
-                m_spawnTimer = 0f;
+                this.m_spawnTimer = 0f;
                 TrySpawn();
             }
         }
@@ -56,15 +56,15 @@ namespace Workshop.Session4.Spawning
         /// </summary>
         private void TrySpawn()
         {
-            if (m_prefabToSpawn == null)
+            if (this.m_prefabToSpawn == null)
             {
                 return;
             }
 
             // Remove null entries — objects may have been destroyed (e.g. collected).
-            m_activeObjects.RemoveAll(obj => obj == null);
+            this.m_activeObjects.RemoveAll(obj => obj == null);
 
-            if (m_activeObjects.Count >= m_maxActiveCount)
+            if (this.m_activeObjects.Count >= this.m_maxActiveCount)
             {
                 return;
             }
@@ -79,18 +79,18 @@ namespace Workshop.Session4.Spawning
         {
             // Random offset within the defined range.
             Vector3 offset = new Vector3(
-                Random.Range(-m_randomPositionOffset.x, m_randomPositionOffset.x),
-                Random.Range(-m_randomPositionOffset.y, m_randomPositionOffset.y),
-                Random.Range(-m_randomPositionOffset.z, m_randomPositionOffset.z)
+                Random.Range(-this.m_randomPositionOffset.x, this.m_randomPositionOffset.x),
+                Random.Range(-this.m_randomPositionOffset.y, this.m_randomPositionOffset.y),
+                Random.Range(-this.m_randomPositionOffset.z, this.m_randomPositionOffset.z)
             );
 
             GameObject spawned = Instantiate(
-                m_prefabToSpawn,
+                this.m_prefabToSpawn,
                 transform.position + offset,
                 Quaternion.identity
             );
 
-            m_activeObjects.Add(spawned);
+            this.m_activeObjects.Add(spawned);
         }
         #endregion
     }

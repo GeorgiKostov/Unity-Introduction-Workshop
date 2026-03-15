@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Spawning
+namespace WorkshopBehaviours.Session4.Spawning
 {
     /// <summary>
     /// Destroys the GameObject it is attached to after a set number of seconds.
@@ -27,7 +27,7 @@ namespace Workshop.Session4.Spawning
         private void ApplyDelayedDestruction()
         {
             // Destroy(gameObject, delay) is a built-in Unity overload.
-            Destroy(gameObject, m_lifetimeInSeconds);
+            Destroy(gameObject, this.m_lifetimeInSeconds);
         }
         #endregion
     }

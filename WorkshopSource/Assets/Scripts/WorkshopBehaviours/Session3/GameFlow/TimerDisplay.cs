@@ -1,7 +1,7 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
-namespace Workshop.Session3.GameFlow
+namespace WorkshopBehaviours.Session3.GameFlow
 {
     /// <summary>
     /// Displays the remaining time from CountdownTimer.
@@ -30,12 +30,12 @@ namespace Workshop.Session3.GameFlow
         private void Awake()
         {
             // Cache reference to the Text component.
-            m_timerText = GetComponent<TextMeshProUGUI>();
+            this.m_timerText = GetComponent<TextMeshProUGUI>();
             
             // Set initial color.
-            if (m_timerText != null)
+            if (this.m_timerText != null)
             {
-                m_timerText.color = m_normalColor;
+                this.m_timerText.color = this.m_normalColor;
             }
         }
         #endregion
@@ -48,13 +48,13 @@ namespace Workshop.Session3.GameFlow
         /// <param name="secondsRemaining">Current seconds left on the timer.</param>
         public void UpdateTimerDisplay(int secondsRemaining)
         {
-            if (m_timerText == null)
+            if (this.m_timerText == null)
             {
                 return;
             }
 
             // Update text using interpolation.
-            m_timerText.text = $"{m_prefix}{secondsRemaining}";
+            this.m_timerText.text = $"{this.m_prefix}{secondsRemaining}";
 
             // Handle color warning.
             UpdateTextColor(secondsRemaining);
@@ -68,13 +68,13 @@ namespace Workshop.Session3.GameFlow
         /// <param name="seconds">Seconds remaining.</param>
         private void UpdateTextColor(int seconds)
         {
-            if (seconds <= m_warningThreshold)
+            if (seconds <= this.m_warningThreshold)
             {
-                m_timerText.color = m_warningColor;
+                this.m_timerText.color = this.m_warningColor;
             }
             else
             {
-                m_timerText.color = m_normalColor;
+                this.m_timerText.color = this.m_normalColor;
             }
         }
         #endregion

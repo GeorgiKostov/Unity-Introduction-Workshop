@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Workshop.Session4.Polish
+namespace WorkshopBehaviours.Session4.Polish
 {
     /// <summary>
     /// Moves a GameObject up and down in a smooth sine wave.
@@ -32,7 +32,7 @@ namespace Workshop.Session4.Polish
         private void Start()
         {
             // Cache initial position to oscillate around.
-            m_startPosition = transform.position;
+            this.m_startPosition = transform.position;
         }
 
         private void Update()
@@ -49,14 +49,14 @@ namespace Workshop.Session4.Polish
         private void ApplyBobbing()
         {
             // Sine wave between -1 and 1, scaled by bobHeight.
-            float newY = m_startPosition.y + Mathf.Sin(
-                Time.time * m_bobSpeed * Mathf.PI * 2f + m_phaseOffset
-            ) * m_bobHeight;
+            float newY = this.m_startPosition.y + Mathf.Sin(
+                Time.time * this.m_bobSpeed * Mathf.PI * 2f + this.m_phaseOffset
+            ) * this.m_bobHeight;
 
             transform.position = new Vector3(
-                m_startPosition.x,
+                this.m_startPosition.x,
                 newY,
-                m_startPosition.z
+                this.m_startPosition.z
             );
         }
 
@@ -65,12 +65,12 @@ namespace Workshop.Session4.Polish
         /// </summary>
         private void ApplyRotation()
         {
-            if (m_rotationSpeed == 0f)
+            if (this.m_rotationSpeed == 0f)
             {
                 return;
             }
 
-            transform.Rotate(Vector3.up, m_rotationSpeed * Time.deltaTime);
+            transform.Rotate(Vector3.up, this.m_rotationSpeed * Time.deltaTime);
         }
         #endregion
     }
