@@ -1,4 +1,5 @@
 using UnityEngine;
+using WorkshopBehaviours.Session3.Movement;
 
 namespace WorkshopExamples.Movement
 {
