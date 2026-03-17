@@ -994,8 +994,6 @@ GameObject:
   - component: {fileID: 465153414}
   - component: {fileID: 465153413}
   - component: {fileID: 465153412}
-  - component: {fileID: 465153410}
-  - component: {fileID: 465153409}
   - component: {fileID: 465153417}
   - component: {fileID: 465153418}
   m_Layer: 0
@@ -1005,38 +1003,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &465153409
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 465153408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc89f85bcdaef8b47a9902cd6fb7cec4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.PlayerRespawner
-  fallThreshold: -8
-  spawnPoint: {fileID: 1713079943}
---- !u!114 &465153410
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 465153408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c9f946c087590b458959654d74d5782, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.PlayerJumper
-  jumpForce: 7
-  groundCheckDistance: 1.15
-  groundCheckRadius: 0.45
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 256
 --- !u!54 &465153412
 Rigidbody:
   m_ObjectHideFlags: 0

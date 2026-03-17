@@ -3,12 +3,15 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
-using WorkshopBehaviours.Session2_New;
+using WorkshopBehaviours.Session2.Movement;
+using WorkshopBehaviours.Session2.Collectibles;
+using WorkshopBehaviours.Session2.Triggers;
+using WorkshopBehaviours.Session2.Environment;
+using WorkshopBehaviours.Session2.UI;
 
 /// <summary>
 /// Builds the Session 2 showcase scene from scratch.
 /// Run via Workshop > Build Session 2 to create, populate, and save the scene.
-/// Modelled after the Session 4 Builder pattern.
 /// </summary>
 public class Session2Builder
 {
@@ -185,9 +188,9 @@ public class Session2Builder
         MakeWall("Wall_East",  new Vector3(25, 2.5f,   0), new Vector3(1,  5, 50), groundLayer, walls);
         MakeWall("Wall_West",  new Vector3(-25,2.5f,   0), new Vector3(1,  5, 50), groundLayer, walls);
 
-        // Section divider platforms (to visually separate showcases)
+        // Section divider platform (visually separates showcases)
         var platforms = new GameObject("Section_Platforms"); platforms.transform.SetParent(arena.transform);
-        var divA = CreateCube("Divider_Movement_Triggers",  new Vector3(0, 0, 5),    new Vector3(50, 0.3f, 0.5f), platforms, GetMat("Mat_Wall"));
+        var divA = CreateCube("Divider_Movement_Triggers", new Vector3(0, 0, 5), new Vector3(50, 0.3f, 0.5f), platforms, GetMat("Mat_Wall"));
         divA.layer = groundLayer;
     }
 
@@ -219,10 +222,10 @@ public class Session2Builder
 
     private static void BuildPlayer(Transform spawnPoint)
     {
-        // Camera first (PlayerMover needs camera ref)
+        // Camera
         var camGo = new GameObject("Main Camera");
         camGo.tag = "MainCamera";
-        var cam = camGo.AddComponent<Camera>();
+        camGo.AddComponent<Camera>();
         camGo.transform.position = new Vector3(0, 12, -32);
         camGo.transform.rotation = Quaternion.Euler(20, 0, 0);
 
@@ -243,28 +246,34 @@ public class Session2Builder
         var cc = player.GetComponent<CapsuleCollider>();
         cc.material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>("Assets/Materials/Session2/PhysicsMat_Player.physicMaterial");
 
-        // PlayerMover
+        // PlayerMover — uses m_moveSpeed and m_cameraTransform field names
         var mover = player.AddComponent<PlayerMover>();
         var soMover = new SerializedObject(mover);
-        soMover.FindProperty("cameraTransform").objectReferenceValue = camGo.transform;
-        soMover.FindProperty("moveSpeed").floatValue = 6f;
+        soMover.FindProperty("m_moveSpeed").floatValue = 6f;
         soMover.ApplyModifiedProperties();
 
-        // PlayerJumper
+        // PlayerJumper — uses m_ prefixed field names
         var jumper = player.AddComponent<PlayerJumper>();
         var soJumper = new SerializedObject(jumper);
-        soJumper.FindProperty("jumpForce").floatValue = 7f;
-        soJumper.FindProperty("groundCheckDistance").floatValue = 1.15f;
-        soJumper.FindProperty("groundCheckRadius").floatValue = 0.45f;
-        soJumper.FindProperty("groundLayer").intValue = LayerMask.GetMask("Ground");
+        soJumper.FindProperty("m_jumpForce").floatValue         = 7f;
+        soJumper.FindProperty("m_groundCheckDistance").floatValue = 1.15f;
+        soJumper.FindProperty("m_groundCheckRadius").floatValue   = 0.45f;
+        soJumper.FindProperty("m_groundLayer").intValue           = LayerMask.GetMask("Ground");
         soJumper.ApplyModifiedProperties();
 
-        // PlayerRespawner
+        // PlayerRespawner — uses m_ prefixed field names
         var respawner = player.AddComponent<PlayerRespawner>();
         var soResp = new SerializedObject(respawner);
-        soResp.FindProperty("spawnPoint").objectReferenceValue = spawnPoint;
-        soResp.FindProperty("fallThreshold").floatValue = -8f;
+        soResp.FindProperty("m_spawnPoint").objectReferenceValue = spawnPoint;
         soResp.ApplyModifiedProperties();
+
+        // CameraFollower — smooth follow cam using Session2's CameraFollower
+        var camFollower = camGo.AddComponent<WorkshopBehaviours.Session2.Camera.CameraFollower>();
+        var soCam = new SerializedObject(camFollower);
+        soCam.FindProperty("m_target").objectReferenceValue   = player.transform;
+        soCam.FindProperty("m_offset").vector3Value          = new Vector3(0f, 7f, -10f);
+        soCam.FindProperty("m_smoothSpeed").floatValue       = 0.12f;
+        soCam.ApplyModifiedProperties();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -280,16 +289,16 @@ public class Session2Builder
 
         // 1. Horizontal (X)
         var oscH = CreateCube("Oscillator_Horizontal", new Vector3(-18, 1, -10), Vector3.one, oscGroup, GetMat("Mat_Oscillator"));
-        SetProps(oscH.AddComponent<Oscillator>(), ("amplitude", 3f), ("frequency", 1f));
+        SetProps(oscH.AddComponent<Oscillator>(), ("m_amplitude", 3f), ("m_frequency", 1f));
 
-        // 2. Vertical (Y) – repurposed: we oscillate along default X; rotate 90° to look vertical
+        // 2. Vertical (Y) – repurposed: oscillate along default X; rotate 90° so it looks vertical
         var oscV = CreateCube("Oscillator_Vertical", new Vector3(-12, 1, -10), Vector3.one, oscGroup, GetMat("Mat_Oscillator"));
         oscV.transform.rotation = Quaternion.Euler(0, 0, 90);
-        SetProps(oscV.AddComponent<Oscillator>(), ("amplitude", 3f), ("frequency", 1.5f));
+        SetProps(oscV.AddComponent<Oscillator>(), ("m_amplitude", 3f), ("m_frequency", 1.5f));
 
         // 3. Fast small amplitude
         var oscF = CreateCube("Oscillator_Fast", new Vector3(-6, 1, -10), Vector3.one, oscGroup, GetMat("Mat_Oscillator"));
-        SetProps(oscF.AddComponent<Oscillator>(), ("amplitude", 1f), ("frequency", 4f));
+        SetProps(oscF.AddComponent<Oscillator>(), ("m_amplitude", 1f), ("m_frequency", 4f));
 
         // ── ROTATORS ──────────────────────────────────────────────────────────
         var rotGroup = new GameObject("Rotators"); rotGroup.transform.SetParent(group.transform);
@@ -299,7 +308,7 @@ public class Session2Builder
         rotY.name = "Rotator_Y_Axis"; rotY.transform.position = new Vector3(0, 1, -10);
         rotY.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_Rotator");
         rotY.transform.SetParent(rotGroup.transform);
-        SetProps(rotY.AddComponent<Rotator>(), ("rotationSpeed", new Vector3(0, 90, 0)));
+        SetProps(rotY.AddComponent<Rotator>(), ("m_rotationSpeed", new Vector3(0, 90, 0)));
 
         // 2. Z-axis spin
         var rotZ = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -307,11 +316,11 @@ public class Session2Builder
         rotZ.transform.rotation = Quaternion.Euler(90, 0, 0); // lay flat
         rotZ.GetComponent<MeshRenderer>().sharedMaterial = GetMat("Mat_Rotator");
         rotZ.transform.SetParent(rotGroup.transform);
-        SetProps(rotZ.AddComponent<Rotator>(), ("rotationSpeed", new Vector3(0, 0, 180)));
+        SetProps(rotZ.AddComponent<Rotator>(), ("m_rotationSpeed", new Vector3(0, 0, 180)));
 
         // 3. Multi-axis
         var rotAll = CreateCube("Rotator_Chaotic", new Vector3(12, 1.5f, -10), new Vector3(1.5f, 1.5f, 1.5f), rotGroup, GetMat("Mat_Rotator"));
-        SetProps(rotAll.AddComponent<Rotator>(), ("rotationSpeed", new Vector3(45, 90, 30)));
+        SetProps(rotAll.AddComponent<Rotator>(), ("m_rotationSpeed", new Vector3(45, 90, 30)));
 
         // ── ORBITERS ─────────────────────────────────────────────────────────
         var orbGroup = new GameObject("Orbiters"); orbGroup.transform.SetParent(group.transform);
@@ -339,12 +348,13 @@ public class Session2Builder
         orbGo.GetComponent<MeshRenderer>().sharedMaterial = orbMat;
         orbGo.transform.SetParent(parent.transform);
 
+        // Set ObjectOrbiter properties using m_ field names
         var orb = orbGo.AddComponent<ObjectOrbiter>();
         var so = new SerializedObject(orb);
-        so.FindProperty("target").objectReferenceValue     = pivotGo.transform;
-        so.FindProperty("orbitRadius").floatValue          = radius;
-        so.FindProperty("orbitSpeed").floatValue           = speed;
-        so.FindProperty("orbitAxis").vector3Value          = Vector3.up;
+        so.FindProperty("m_target").objectReferenceValue = pivotGo.transform;
+        so.FindProperty("m_orbitRadius").floatValue      = radius;
+        so.FindProperty("m_orbitSpeed").floatValue       = speed;
+        so.FindProperty("m_orbitAxis").vector3Value      = Vector3.up;
         so.ApplyModifiedProperties();
     }
 
@@ -357,33 +367,29 @@ public class Session2Builder
         var group = new GameObject("Trigger_Showcases");
 
         // ── COLOR CHANGER ────────────────────────────────────────────────────
-        // A flat coloured pad. Walk onto it to turn red; resets after delay.
         var cc = CreateZonePad("ColorChanger_Zone", new Vector3(-18, 0.05f, 12), new Vector3(8, 0.1f, 8), GetMat("Mat_Zone_Color"), group);
         var changer = cc.AddComponent<ColorChanger>();
         var soCc = new SerializedObject(changer);
-        soCc.FindProperty("targetColor").colorValue = Color.red;
-        soCc.FindProperty("resetDelay").floatValue  = 2f;
+        soCc.FindProperty("m_targetColor").colorValue = Color.red;
+        soCc.FindProperty("m_resetDelay").floatValue  = 2f;
         soCc.ApplyModifiedProperties();
 
         // ── SOUND TRIGGER ────────────────────────────────────────────────────
-        // Walk onto the green pad – plays AudioClip (assign in Inspector).
         var st = CreateZonePad("SoundTrigger_Zone", new Vector3(-6, 0.05f, 12), new Vector3(8, 0.1f, 8), GetMat("Mat_Zone_Sound"), group);
         var audioSrc = st.AddComponent<AudioSource>();
         audioSrc.playOnAwake = false;
         st.AddComponent<SoundTrigger>();
-        // [audioClip]: assign your AudioClip from the Project window in the Inspector.
+        // [m_audioClip]: assign your AudioClip from the Project window in the Inspector.
 
         // ── PUSH ZONE ────────────────────────────────────────────────────────
-        // Step on the yellow pad to be launched upward.
         var pz = CreateZonePad("PushZone_Launchpad", new Vector3(6, 0.05f, 12), new Vector3(8, 0.1f, 8), GetMat("Mat_Zone_Push"), group);
         var pusher = pz.AddComponent<PushZone>();
         var soPz = new SerializedObject(pusher);
-        soPz.FindProperty("pushDirection").vector3Value = Vector3.up;
-        soPz.FindProperty("pushForce").floatValue       = 25f;
+        soPz.FindProperty("m_pushDirection").vector3Value = Vector3.up;
+        soPz.FindProperty("m_pushForce").floatValue       = 25f;
         soPz.ApplyModifiedProperties();
 
         // ── DESTRUCTION ZONE + TARGET ─────────────────────────────────────────
-        // Push the brown box off of its little shelf into the purple pit.
         var dzGroup = new GameObject("DestructionSetup"); dzGroup.transform.SetParent(group.transform);
 
         // Shelf the box sits on
@@ -426,15 +432,15 @@ public class Session2Builder
     private static void BuildScoreSystemAndUI()
     {
         // ScoreManager
-        var smGo  = new GameObject("ScoreManager");
-        var sm    = smGo.AddComponent<ScoreManager>();
+        var smGo = new GameObject("ScoreManager");
+        var sm   = smGo.AddComponent<ScoreManager>();
 
         // Canvas
         var canvasGo = new GameObject("Canvas");
         var canvas   = canvasGo.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = canvasGo.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode       = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.matchWidthOrHeight  = 0.5f;
         canvasGo.AddComponent<GraphicRaycaster>();
@@ -455,15 +461,12 @@ public class Session2Builder
             anchorMin: new Vector2(0.5f, 0), anchorMax: new Vector2(0.5f, 0),
             alignment: TextAlignmentOptions.Center);
 
-        // ScoreDisplay component – wired to the text
-        var sdGo = new GameObject("ScoreDisplay");
-        var sd   = sdGo.AddComponent<ScoreDisplay>();
-        var soSd = new SerializedObject(sd);
-        soSd.FindProperty("scoreText").objectReferenceValue = scoreTmp;
-        soSd.ApplyModifiedProperties();
+        // ScoreDisplay uses RequireComponent(TextMeshProUGUI) and caches it via GetComponent in Awake.
+        // It must live on the SAME GameObject as the TextMeshProUGUI — add it directly to ScoreText.
+        var sd = scoreTmp.gameObject.AddComponent<ScoreDisplay>();
 
-        // Wire OnScoreChanged -> ScoreDisplay.UpdateText
-        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateText);
+        // Wire OnScoreChanged event -> ScoreDisplay.UpdateScoreText
+        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateScoreText);
 
         // Collectibles
         var colGroup = new GameObject("Collectibles");
@@ -484,7 +487,7 @@ public class Session2Builder
 
             var c  = col.AddComponent<Collectible>();
             var so = new SerializedObject(c);
-            so.FindProperty("pointValue").intValue = 10;
+            so.FindProperty("m_pointValue").intValue = 10;
             so.ApplyModifiedProperties();
         }
     }
@@ -554,13 +557,13 @@ public class Session2Builder
             if (prop == null) { Debug.LogWarning($"Session2Builder: property '{name}' not found on {obj.GetType().Name}"); continue; }
             switch (value)
             {
-                case float   f: prop.floatValue        = f; break;
-                case int     i: prop.intValue          = i; break;
-                case bool    b: prop.boolValue         = b; break;
-                case Vector3 v: prop.vector3Value      = v; break;
-                case Color   c: prop.colorValue        = c; break;
+                case float   f: prop.floatValue           = f; break;
+                case int     i: prop.intValue             = i; break;
+                case bool    b: prop.boolValue            = b; break;
+                case Vector3 v: prop.vector3Value         = v; break;
+                case Color   c: prop.colorValue           = c; break;
                 case Object  o: prop.objectReferenceValue = o; break;
-                case string  s: prop.stringValue       = s; break;
+                case string  s: prop.stringValue          = s; break;
             }
         }
         so.ApplyModifiedProperties();

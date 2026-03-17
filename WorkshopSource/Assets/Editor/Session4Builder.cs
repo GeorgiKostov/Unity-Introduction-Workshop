@@ -5,7 +5,10 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using TMPro;
 using UnityEngine.UI;
-using WorkshopBehaviours.Session2_New;
+using WorkshopBehaviours.Session2.Collectibles;
+using WorkshopBehaviours.Session2.Triggers;
+using WorkshopBehaviours.Session2.UI;
+using WorkshopBehaviours.Session3.Movement;
 using WorkshopBehaviours.Session3.Platforms;
 
 /// <summary>
@@ -351,15 +354,15 @@ public class Session4Builder
         var cc = player.GetComponent<CapsuleCollider>();
         cc.material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>("Assets/Materials/Session4/PhysicsMat_Player.physicMaterial");
 
-        var mover = player.AddComponent<PlayerMover>();
-        Sp(mover, ("cameraTransform", (Object)_cameraGo.transform), ("moveSpeed", 6f));
+        var mover = player.AddComponent<PlayerOrbitalMover>();
+        Sp(mover, ("m_moveSpeed", 6f));
 
-        var jumper = player.AddComponent<PlayerJumper>();
-        Sp(jumper, ("jumpForce", 7f), ("groundCheckDistance", 1.15f),
-                   ("groundCheckRadius", 0.45f), ("groundLayer", (object)LayerMask.GetMask("Ground")));
+        var jumper = player.AddComponent<WorkshopBehaviours.Session2.Movement.PlayerJumper>();
+        Sp(jumper, ("m_jumpForce", 7f), ("m_groundCheckDistance", 1.15f),
+                   ("m_groundCheckRadius", 0.45f), ("m_groundLayer", (object)LayerMask.GetMask("Ground")));
 
-        var resp = player.AddComponent<PlayerRespawner>();
-        Sp(resp, ("spawnPoint", (Object)spawnTf), ("fallThreshold", -10f));
+        var resp = player.AddComponent<WorkshopBehaviours.Session2.Movement.PlayerRespawner>();
+        Sp(resp, ("m_spawnPoint", (Object)spawnTf));
 
         // Session 4 keeps the camera at a fixed angle overlooking the arena.
         // Camera scripting was covered in Session 3 — the focus here is lighting
@@ -465,7 +468,7 @@ public class Session4Builder
         go.transform.SetParent(parent.transform);
 
         var col = go.AddComponent<Collectible>();
-        Sp(col, ("pointValue", pts));
+        Sp(col, ("m_pointValue", pts));
 
         // Point light — yellow/tinted, range 3, no shadows.
         // Teaching: Emission drives the material; Point Light drives the scene.
@@ -602,12 +605,11 @@ public class Session4Builder
             new Vector2(1400,36), new Vector2(0,22),
             new Vector2(.5f,0), new Vector2(.5f,0), TextAlignmentOptions.Center);
 
-        var sdGo = new GameObject("ScoreDisplay");
-        sdGo.transform.SetParent(canvasGo.transform, false);
-        var sd = sdGo.AddComponent<ScoreDisplay>();
-        Sp(sd, ("scoreText", (Object)scoreTmp));
+        // ScoreDisplay — uses RequireComponent(TextMeshProUGUI), must be on same GameObject as TMP
+        var sd = scoreTmp.gameObject.AddComponent<ScoreDisplay>();
 
-        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateText);
+        // Wire OnScoreChanged → ScoreDisplay.UpdateScoreText
+        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateScoreText);
     }
 
     // ── PARTICLE PREFAB ──────────────────────────────────────────────────────

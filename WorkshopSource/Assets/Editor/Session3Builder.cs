@@ -3,7 +3,10 @@ using UnityEngine;
 using UnityEditor.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
-using WorkshopBehaviours.Session2_New;
+using WorkshopBehaviours.Session2.Collectibles;
+using WorkshopBehaviours.Session2.Triggers;
+using WorkshopBehaviours.Session2.UI;
+using WorkshopBehaviours.Session3.Movement;
 using WorkshopBehaviours.Session3.Feedback;
 using WorkshopBehaviours.Session3.Platforms;
 
@@ -314,28 +317,26 @@ public class Session3Builder
         cc.material  = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(
                            "Assets/Materials/Session3/PhysicsMat_Player.physicMaterial");
 
-        // PlayerMover
-        var mover = player.AddComponent<PlayerMover>();
+        // PlayerOrbitalMover — camera-relative, reads Camera.main, no serialized camera reference
+        var mover = player.AddComponent<PlayerOrbitalMover>();
         var soM   = new SerializedObject(mover);
-        soM.FindProperty("cameraTransform").objectReferenceValue = camGo.transform;
-        soM.FindProperty("moveSpeed").floatValue = 6f;
+        soM.FindProperty("m_moveSpeed").floatValue = 6f;
         soM.ApplyModifiedProperties();
 
-        // PlayerJumper  — ground layer assigned so SphereCast can detect Ground
-        var jumper = player.AddComponent<PlayerJumper>();
+        // PlayerJumper — ground layer assigned so SphereCast can detect Ground
+        var jumper = player.AddComponent<WorkshopBehaviours.Session2.Movement.PlayerJumper>();
         var soJ    = new SerializedObject(jumper);
-        soJ.FindProperty("jumpForce").floatValue          = 7f;
-        soJ.FindProperty("groundCheckDistance").floatValue = 1.15f;
-        soJ.FindProperty("groundCheckRadius").floatValue   = 0.45f;
-        soJ.FindProperty("groundLayer").intValue           = LayerMask.GetMask("Ground");
+        soJ.FindProperty("m_jumpForce").floatValue           = 7f;
+        soJ.FindProperty("m_groundCheckDistance").floatValue = 1.15f;
+        soJ.FindProperty("m_groundCheckRadius").floatValue   = 0.45f;
+        soJ.FindProperty("m_groundLayer").intValue           = LayerMask.GetMask("Ground");
         soJ.ApplyModifiedProperties();
 
-        // PlayerRespawner — triggers Respawn() if player falls below -8
+        // PlayerRespawner — triggers Respawn() if player falls to m_rigidbody.isKinematic threshold
         //   Public Respawn() also called by HazardZone scripts
-        var respawner = player.AddComponent<PlayerRespawner>();
+        var respawner = player.AddComponent<WorkshopBehaviours.Session2.Movement.PlayerRespawner>();
         var soR       = new SerializedObject(respawner);
-        soR.FindProperty("spawnPoint").objectReferenceValue = spawnPoint;
-        soR.FindProperty("fallThreshold").floatValue        = -8f;
+        soR.FindProperty("m_spawnPoint").objectReferenceValue = spawnPoint;
         soR.ApplyModifiedProperties();
 
         // Invisible void HazardZone — catches the player before the auto-respawn threshold
@@ -380,8 +381,8 @@ public class Session3Builder
                                        new Vector3(7, 0.1f, 7), "Mat_Zone_Color", group);
         var changer    = colorZone.AddComponent<ColorChanger>();
         var soCh       = new SerializedObject(changer);
-        soCh.FindProperty("targetColor").colorValue = new Color(1.0f, 0.2f, 0.8f, 1f); // vivid magenta
-        soCh.FindProperty("resetDelay").floatValue  = 1.5f;
+        soCh.FindProperty("m_targetColor").colorValue = new Color(1.0f, 0.2f, 0.8f, 1f); // vivid magenta
+        soCh.FindProperty("m_resetDelay").floatValue  = 1.5f;
         soCh.ApplyModifiedProperties();
 
         // ── PARTICLE TRIGGER ──────────────────────────────────────────────────
@@ -564,7 +565,7 @@ public class Session3Builder
 
         var col = go.AddComponent<Collectible>();
         var so  = new SerializedObject(col);
-        so.FindProperty("pointValue").intValue = points;
+        so.FindProperty("m_pointValue").intValue = points;
         so.ApplyModifiedProperties();
     }
 
@@ -641,17 +642,11 @@ public class Session3Builder
             anchorMax:   new Vector2(0.5f, 0),
             alignment:   TextAlignmentOptions.Center);
 
-        // ScoreDisplay — receives int from ScoreManager.OnScoreChanged
-        var sdGo = new GameObject("ScoreDisplay");
-        sdGo.transform.SetParent(canvasGo.transform, false);
-        var sd   = sdGo.AddComponent<ScoreDisplay>();
-        var soSd = new SerializedObject(sd);
-        soSd.FindProperty("scoreText").objectReferenceValue = scoreTmp;
-        soSd.ApplyModifiedProperties();
+        // ScoreDisplay — uses RequireComponent(TextMeshProUGUI), must be on same GameObject as TMP
+        var sd = scoreTmp.gameObject.AddComponent<ScoreDisplay>();
 
-        // Wire  OnScoreChanged  →  ScoreDisplay.UpdateText
-        // ScoreManager announces. ScoreDisplay listens. Inspector is the wire.
-        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateText);
+        // Wire OnScoreChanged → ScoreDisplay.UpdateScoreText
+        UnityEditor.Events.UnityEventTools.AddPersistentListener<int>(sm.OnScoreChanged, sd.UpdateScoreText);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

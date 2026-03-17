@@ -279,7 +279,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 25
 --- !u!23 &15473391
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -618,7 +617,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 25
 --- !u!23 &75841804
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -984,7 +982,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &179428236
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1474,7 +1471,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &286358115
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1601,7 +1597,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &312100019
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1728,7 +1723,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 25
 --- !u!23 &359553718
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2206,7 +2200,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 50
 --- !u!23 &424786485
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2733,7 +2726,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 25
 --- !u!23 &496190550
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3868,7 +3860,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &705417303
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3995,7 +3986,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &709101875
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -4509,7 +4499,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a64463e833ed2924f92e4ceeb2fa882d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.ScoreDisplay
-  scoreText: {fileID: 887286564}
 --- !u!1 &887286563
 GameObject:
   m_ObjectHideFlags: 0
@@ -4695,7 +4684,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &887746058
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -5136,7 +5124,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &966035905
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -6095,9 +6082,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43ce2641202df3849a4cf6dc26d2c5a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.ScoreManager
-  OnScoreChanged:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!4 &1034981392
 Transform:
   m_ObjectHideFlags: 0
@@ -6853,7 +6837,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 50
 --- !u!23 &1304774449
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7885,9 +7868,8 @@ GameObject:
   - component: {fileID: 1444380346}
   - component: {fileID: 1444380345}
   - component: {fileID: 1444380344}
-  - component: {fileID: 1444380343}
-  - component: {fileID: 1444380342}
-  - component: {fileID: 1444380341}
+  - component: {fileID: 1444380350}
+  - component: {fileID: 1444380349}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -7895,52 +7877,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1444380341
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1444380340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc89f85bcdaef8b47a9902cd6fb7cec4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.PlayerRespawner
-  fallThreshold: -10
-  spawnPoint: {fileID: 1536810022}
---- !u!114 &1444380342
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1444380340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c9f946c087590b458959654d74d5782, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.PlayerJumper
-  jumpForce: 7
-  groundCheckDistance: 1.15
-  groundCheckRadius: 0.45
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 256
---- !u!114 &1444380343
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1444380340}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 079688af18e1461409afdfd512a82aa4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.PlayerMover
-  moveSpeed: 6
-  cameraTransform: {fileID: 1816943965}
 --- !u!54 &1444380344
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -8063,6 +7999,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1444380349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444380340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bc1104ec1bd12c48a6d0b2efd832f17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorkshopBehaviours.Session3.Movement.PlayerOrbitalMover
+  m_moveSpeed: 7
+  m_rotationSpeed: 25
+--- !u!114 &1444380350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444380340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5b58908d0d3b6f478b0b32683f2e769, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorkshopBehaviours.Session2.Movement.PlayerJumper
+  m_jumpForce: 9
+  m_fallMultiplier: 2.5
+  m_lowJumpMultiplier: 2
+  m_groundCheckDistance: 1.1
+  m_groundCheckRadius: 0.45
+  m_groundLayer:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!1 &1479175348
 GameObject:
   m_ObjectHideFlags: 0
@@ -9327,7 +9297,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 25
 --- !u!23 &1882651277
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -9693,7 +9662,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 50
 --- !u!23 &1973421897
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -9856,7 +9824,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &1987687269
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -10221,7 +10188,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb8251802203ad4d91088b651d3d131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Workshop.Session2_New.Collectible
-  pointValue: 10
 --- !u!23 &2076061637
 MeshRenderer:
   m_ObjectHideFlags: 0

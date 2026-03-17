@@ -40,7 +40,7 @@ namespace WorkshopBehaviours.Session3.GameFlow
             // Subscribe to score changes to check win condition efficiently.
             if (this.m_scoreManager != null)
             {
-                this.m_scoreManager.ScoreChanged.AddListener(HandleScoreChanged);
+                this.m_scoreManager.OnScoreChanged.AddListener(HandleScoreChanged);
             }
         }
 
@@ -49,7 +49,7 @@ namespace WorkshopBehaviours.Session3.GameFlow
             // Unsubscribe to prevent memory leaks.
             if (this.m_scoreManager != null)
             {
-                this.m_scoreManager.ScoreChanged.RemoveListener(HandleScoreChanged);
+                this.m_scoreManager.OnScoreChanged.RemoveListener(HandleScoreChanged);
             }
         }
 

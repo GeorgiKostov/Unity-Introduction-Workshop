@@ -5,7 +5,7 @@ namespace WorkshopBehaviours.Session2.Collectibles
     /// <summary>
     /// Makes a GameObject collectable.
     /// Requires a Collider with "Is Trigger" checked.
-    /// Tags the Player as "Player" in the Inspector for detection.
+    /// Tag the Player as "Player" in the Inspector for detection.
     /// </summary>
     public class Collectible : MonoBehaviour
     {
@@ -34,7 +34,7 @@ namespace WorkshopBehaviours.Session2.Collectibles
 
         #region Private Methods
         /// <summary>
-        /// Handles the collection logic, feedback, and destruction.
+        /// Handles collection logic: visual feedback, scoring, and self-destruction.
         /// </summary>
         private void Collect()
         {
@@ -44,13 +44,14 @@ namespace WorkshopBehaviours.Session2.Collectibles
                 Instantiate(this.m_collectEffectPrefab, transform.position, Quaternion.identity);
             }
 
-            // Tell the ScoreManager to add points.
-            // FindFirstObjectByType is safe here — it runs rarely (once per pickup).
-            ScoreManager scoreManager = FindFirstObjectByType<ScoreManager>();
-            
-            if (scoreManager != null)
+            // Use singleton Instance for performance — avoids FindFirstObjectByType on every pickup.
+            if (ScoreManager.Instance != null)
             {
-                scoreManager.AddScore(this.m_pointValue);
+                ScoreManager.Instance.AddScore(this.m_pointValue);
+            }
+            else
+            {
+                Debug.LogWarning("Collectible: ScoreManager.Instance is null. Is a ScoreManager present in the scene?", this);
             }
 
             // Remove this object from the scene.
