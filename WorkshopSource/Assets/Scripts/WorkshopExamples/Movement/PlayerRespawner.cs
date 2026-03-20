@@ -18,6 +18,7 @@ namespace WorkshopExamples.Movement
         [Tooltip("Brief freeze duration after respawning (seconds).")]
         [SerializeField] private float m_respawnDelay = 0.5f;
 
+        [SerializeField] private float threshold = -10f;
         private Rigidbody m_rigidbody;
         private bool m_isRespawning;
         #endregion
@@ -31,7 +32,7 @@ namespace WorkshopExamples.Movement
 
         private void Update()
         {
-            if (transform.position.y < -10f && !m_isRespawning)
+            if (transform.position.y < threshold && !m_isRespawning)
             {
                 Respawn();
             }

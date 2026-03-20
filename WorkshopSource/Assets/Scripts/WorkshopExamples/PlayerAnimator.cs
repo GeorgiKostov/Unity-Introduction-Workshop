@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopBehaviours.Session3
+namespace WorkshopExamples
 {
     /// <summary>
     /// Drives the Animator by reading Rigidbody velocity.
