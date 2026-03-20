@@ -29,7 +29,7 @@ namespace WorkshopExamples.Movement
             // Cache reference to the Rigidbody component.
             m_rigidbody = GetComponent<Rigidbody>();
         }
-
+        
         private void Update()
         {
             if (transform.position.y < threshold && !m_isRespawning)
@@ -37,6 +37,17 @@ namespace WorkshopExamples.Movement
                 Respawn();
             }
         }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.transform.CompareTag("Bullet"))
+            {
+                Respawn();
+            }
+        }
+        
+
+
         #endregion
 
         #region Public Methods
