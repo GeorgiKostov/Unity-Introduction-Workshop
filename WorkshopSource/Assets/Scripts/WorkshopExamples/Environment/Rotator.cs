@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Environment
+namespace WorkshopBehaviours.Session2.Environment
 {
     /// <summary>
     /// Rotates this GameObject continuously around one or more of its local axes.

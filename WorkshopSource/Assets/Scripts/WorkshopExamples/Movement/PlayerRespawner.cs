@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Movement
+namespace WorkshopBehaviours.Session2.Movement
 {
     /// <summary>
     /// Stores the player's spawn point and handles teleportation back to it.
@@ -18,7 +18,6 @@ namespace WorkshopExamples.Movement
         [Tooltip("Brief freeze duration after respawning (seconds).")]
         [SerializeField] private float m_respawnDelay = 0.5f;
 
-        [SerializeField] private float threshold = -10f;
         private Rigidbody m_rigidbody;
         private bool m_isRespawning;
         #endregion
@@ -27,27 +26,16 @@ namespace WorkshopExamples.Movement
         private void Awake()
         {
             // Cache reference to the Rigidbody component.
-            m_rigidbody = GetComponent<Rigidbody>();
+            this.m_rigidbody = GetComponent<Rigidbody>();
         }
-        
+
         private void Update()
         {
-            if (transform.position.y < threshold && !m_isRespawning)
+            if (transform.position.y < -10f && !this.m_isRespawning)
             {
                 Respawn();
             }
         }
-
-        private void OnCollisionEnter(Collision collision)
-        {
-            if (collision.transform.CompareTag("Bullet"))
-            {
-                Respawn();
-            }
-        }
-        
-
-
         #endregion
 
         #region Public Methods
@@ -57,7 +45,7 @@ namespace WorkshopExamples.Movement
         /// </summary>
         public async void Respawn()
         {
-            if (m_isRespawning)
+            if (this.m_isRespawning)
             {
                 return; // Prevent double-trigger.
             }
@@ -66,7 +54,7 @@ namespace WorkshopExamples.Movement
         }
         public void SetSpawnPoint(Transform newSpawnPoint)
         {
-            m_spawnPoint = newSpawnPoint;
+            this.m_spawnPoint = newSpawnPoint;
         }
         #endregion
 
@@ -76,21 +64,21 @@ namespace WorkshopExamples.Movement
         /// </summary>
         private async Awaitable RespawnAsync()
         {
-            m_isRespawning = true;
+            this.m_isRespawning = true;
 
             // Freeze physics so the player doesn't slide during teleport.
-            m_rigidbody.isKinematic = true;
+            this.m_rigidbody.isKinematic = true;
 
             // Move to spawn point.
-            Vector3 destination = m_spawnPoint != null
-                ? m_spawnPoint.position
+            Vector3 destination = this.m_spawnPoint != null
+                ? this.m_spawnPoint.position
                 : Vector3.up * 2f; // Fallback: lift above origin.
 
             transform.position = destination;
 
             // Wait a moment before re-enabling physics.
             // Using Awaitable.WaitForSecondsAsync as per Unity 6 style guide.
-            await Awaitable.WaitForSecondsAsync(m_respawnDelay, destroyCancellationToken);
+            await Awaitable.WaitForSecondsAsync(this.m_respawnDelay, destroyCancellationToken);
 
             // Guard continuation in case object was destroyed during wait.
             if (this == null || !isActiveAndEnabled)
@@ -98,9 +86,9 @@ namespace WorkshopExamples.Movement
                 return;
             }
 
-            m_rigidbody.isKinematic = false;
-            m_rigidbody.linearVelocity = Vector3.zero;
-            m_isRespawning = false;
+            this.m_rigidbody.isKinematic = false;
+            this.m_rigidbody.linearVelocity = Vector3.zero;
+            this.m_isRespawning = false;
         }
         #endregion
     }

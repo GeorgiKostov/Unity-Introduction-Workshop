@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Triggers
+namespace WorkshopBehaviours.Session2.Triggers
 {
     /// <summary>
     /// Applies a continuous physics force to the player while they stay inside this trigger.
@@ -29,7 +29,7 @@ namespace WorkshopExamples.Triggers
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (other.CompareTag(Tags.Player))
             {
                 this.m_playerRigidbody = other.GetComponent<Rigidbody>();
             }
@@ -37,7 +37,7 @@ namespace WorkshopExamples.Triggers
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (other.CompareTag(Tags.Player))
             {
                 this.m_playerRigidbody = null;
             }

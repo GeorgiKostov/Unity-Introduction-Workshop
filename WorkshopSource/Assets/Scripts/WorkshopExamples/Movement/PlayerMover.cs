@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Movement
+namespace WorkshopBehaviours.Session2.Movement
 {
     /// <summary>
     /// Moves the player along the X and Z axes using keyboard input.
@@ -27,8 +27,8 @@ namespace WorkshopExamples.Movement
         #region Properties
         public float MoveSpeed
         {
-            get => m_moveSpeed;
-            set => m_moveSpeed = value;
+            get => this.m_moveSpeed;
+            set => this.m_moveSpeed = value;
         }
         #endregion
 
@@ -36,10 +36,10 @@ namespace WorkshopExamples.Movement
         private void Awake()
         {
             // Cache reference to the Rigidbody component.
-            m_rigidbody = GetComponent<Rigidbody>();
+            this.m_rigidbody = GetComponent<Rigidbody>();
 
             // Prevent the player from tipping over when hit by physics.
-            m_rigidbody.freezeRotation = true;
+            this.m_rigidbody.freezeRotation = true;
         }
 
         private void Update()
@@ -61,8 +61,8 @@ namespace WorkshopExamples.Movement
         /// </summary>
         private void HandleInput()
         {
-            m_horizontalInput = Input.GetAxisRaw(k_horizontalAxis);
-            m_verticalInput = Input.GetAxisRaw(k_verticalAxis);
+            this.m_horizontalInput = Input.GetAxisRaw(k_horizontalAxis);
+            this.m_verticalInput = Input.GetAxisRaw(k_verticalAxis);
         }
 
         /// <summary>
@@ -71,14 +71,14 @@ namespace WorkshopExamples.Movement
         private void ApplyMovement()
         {
             // Build a direction vector on the flat XZ plane.
-            Vector3 direction = new Vector3(m_horizontalInput, 0f, m_verticalInput).normalized;
+            Vector3 direction = new Vector3(this.m_horizontalInput, 0f, this.m_verticalInput).normalized;
 
             // Apply velocity directly so movement feels instant and responsive.
-            Vector3 targetVelocity = direction * m_moveSpeed;
+            Vector3 targetVelocity = direction * this.m_moveSpeed;
             
-            m_rigidbody.linearVelocity = new Vector3(
+            this.m_rigidbody.linearVelocity = new Vector3(
                 targetVelocity.x,
-                m_rigidbody.linearVelocity.y, // Preserve vertical velocity (gravity/jump).
+                this.m_rigidbody.linearVelocity.y, // Preserve vertical velocity (gravity/jump).
                 targetVelocity.z
             );
         }

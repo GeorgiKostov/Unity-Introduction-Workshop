@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Collectibles
+namespace WorkshopBehaviours.Session2.Collectibles
 {
     /// <summary>
     /// Makes a GameObject collectable.

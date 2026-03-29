@@ -9,13 +9,34 @@ EditorBuildSettings:
     path: Assets/Scenes/LoadingScreen.unity
     guid: ced1524a542364df2b99197a47b54552
   - enabled: 1
-    path: Assets/_MyGame/Scenes/Session1.unity
-    guid: e45e234288770458891f8db1c2aed31b
+    path: Assets/Scenes/1_BasicScene.unity
+    guid: c52bf4c1ce5cd694f8836a6407042c45
+  - enabled: 0
+    path: Assets/Scenes/Session2.unity
+    guid: 00d70537eba5143b094b1d365d3bfb33
   - enabled: 1
-    path: Assets/_MyGame/Scenes/Session2.unity
-    guid: e0d3a1deaac1d490aad74c4ae81c410a
+    path: Assets/Scenes/3_Teleport.unity
+    guid: 87c1acd17b2aa4f8181c2501525678d0
   - enabled: 1
-    path: Assets/Scenes/Session3_1.unity
+    path: Assets/Scenes/4_Animation.unity
+    guid: 273d2d209e2f1f3478cc5e2a102a5668
+  - enabled: 1
+    path: Assets/Scenes/3_MeshImport.unity
     guid: 184e9f232e67946879fa5f052a9d35d3
+  - enabled: 1
+    path: Assets/Scenes/4_MaterialSetup.unity
+    guid: c7acaf90e31084976a50310ea0a70755
+  - enabled: 0
+    path: Assets/Scenes/4_Day.unity
+    guid: 96aa45a88672029439dddd792e8c61a1
+  - enabled: 1
+    path: Assets/Scenes/4_Night.unity
+    guid: c0b27b427bbae8f42906ea343c835e7f
+  - enabled: 1
+    path: Assets/Scenes/4_MovingPlatforms.unity
+    guid: 90e47909f4b994df9ac9539a9b8ff4da
+  - enabled: 1
+    path: Assets/Scenes/4_LightSetup.unity
+    guid: 900d37ca784844065a7461a91dca309f
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

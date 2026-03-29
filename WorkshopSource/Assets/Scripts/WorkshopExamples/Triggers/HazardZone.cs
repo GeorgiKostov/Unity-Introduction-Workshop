@@ -1,7 +1,7 @@
 using UnityEngine;
-using WorkshopExamples.Movement;
+using WorkshopBehaviours.Session2.Movement;
 
-namespace WorkshopExamples.Triggers
+namespace WorkshopBehaviours.Session2.Triggers
 {
     /// <summary>
     /// Teleports the player to their spawn point when they enter this trigger zone.

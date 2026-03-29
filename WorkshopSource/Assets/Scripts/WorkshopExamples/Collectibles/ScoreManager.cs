@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace WorkshopExamples.Collectibles
+namespace WorkshopBehaviours.Session2.Collectibles
 {
     /// <summary>
     /// Tracks the player's score and notifies listeners when it changes.

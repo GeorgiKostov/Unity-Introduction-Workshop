@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-namespace WorkshopExamples.UI
+namespace WorkshopBehaviours.Session2.UI
 {
     /// <summary>
     /// Updates a TextMeshPro label whenever the score changes.

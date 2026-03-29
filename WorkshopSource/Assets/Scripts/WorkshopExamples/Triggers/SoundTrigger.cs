@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Triggers
+namespace WorkshopBehaviours.Session2.Triggers
 {
     /// <summary>
     /// Plays an AudioClip once when the player enters the trigger zone.

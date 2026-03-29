@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Environment
+namespace WorkshopBehaviours.Session2.Environment
 {
     /// <summary>
     /// Orbits this GameObject around a target Transform at a fixed radius.

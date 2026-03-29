@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace WorkshopExamples.Triggers
+namespace WorkshopBehaviours.Session2.Triggers
 {
     /// <summary>
     /// Destroys any GameObject tagged "Destructible" that enters this trigger.

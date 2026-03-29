@@ -1,6 +1,7 @@
 using UnityEngine;
+using WorkshopBehaviours.Session3.Movement;
 
-namespace WorkshopExamples.Movement
+namespace WorkshopBehaviours.Session2.Movement
 {
     /// <summary>
     /// Temporarily multiplies the player's move speed when Left Shift is held.
@@ -31,16 +32,16 @@ namespace WorkshopExamples.Movement
         #region MonoBehaviour Methods
         private void Awake()
         {
-            m_playerMover = GetComponent<PlayerMover>();
-            m_playerOrbitalMover = GetComponent<PlayerOrbitalMover>();
+            this.m_playerMover = GetComponent<PlayerMover>();
+            this.m_playerOrbitalMover = GetComponent<PlayerOrbitalMover>();
             
-            if (m_playerMover != null)
+            if (this.m_playerMover != null)
             {
-                m_originalMoveSpeed = m_playerMover.MoveSpeed;
+                this.m_originalMoveSpeed = this.m_playerMover.MoveSpeed;
             }
-            else if (m_playerOrbitalMover != null)
+            else if (this.m_playerOrbitalMover != null)
             {
-                m_originalMoveSpeed = m_playerOrbitalMover.MoveSpeed;
+                this.m_originalMoveSpeed = this.m_playerOrbitalMover.MoveSpeed;
             }
         }
 
@@ -48,13 +49,13 @@ namespace WorkshopExamples.Movement
         {
             UpdateCooldown();
 
-            if (m_isSliding)
+            if (this.m_isSliding)
             {
                 HandleSliding();
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftShift) && m_cooldownTimer <= 0f)
+            if (Input.GetKeyDown(KeyCode.LeftShift) && this.m_cooldownTimer <= 0f)
             {
                 StartSlide();
             }
@@ -67,9 +68,9 @@ namespace WorkshopExamples.Movement
         /// </summary>
         private void UpdateCooldown()
         {
-            if (m_cooldownTimer > 0f)
+            if (this.m_cooldownTimer > 0f)
             {
-                m_cooldownTimer -= Time.deltaTime;
+                this.m_cooldownTimer -= Time.deltaTime;
             }
         }
 
@@ -78,9 +79,9 @@ namespace WorkshopExamples.Movement
         /// </summary>
         private void HandleSliding()
         {
-            m_slideTimer -= Time.deltaTime;
+            this.m_slideTimer -= Time.deltaTime;
             
-            if (m_slideTimer <= 0f)
+            if (this.m_slideTimer <= 0f)
             {
                 EndSlide();
             }
@@ -91,16 +92,16 @@ namespace WorkshopExamples.Movement
         /// </summary>
         private void StartSlide()
         {
-            m_isSliding = true;
-            m_slideTimer = m_slideDuration;
+            this.m_isSliding = true;
+            this.m_slideTimer = this.m_slideDuration;
             
-            if (m_playerMover != null)
+            if (this.m_playerMover != null)
             {
-                m_playerMover.MoveSpeed = m_originalMoveSpeed * m_slideSpeedMultiplier;
+                this.m_playerMover.MoveSpeed = this.m_originalMoveSpeed * this.m_slideSpeedMultiplier;
             }
-            else if (m_playerOrbitalMover != null)
+            else if (this.m_playerOrbitalMover != null)
             {
-                m_playerOrbitalMover.MoveSpeed = m_originalMoveSpeed * m_slideSpeedMultiplier;
+                this.m_playerOrbitalMover.MoveSpeed = this.m_originalMoveSpeed * this.m_slideSpeedMultiplier;
             }
         }
 
@@ -109,16 +110,16 @@ namespace WorkshopExamples.Movement
         /// </summary>
         private void EndSlide()
         {
-            m_isSliding = false;
-            m_cooldownTimer = m_slideCooldown;
+            this.m_isSliding = false;
+            this.m_cooldownTimer = this.m_slideCooldown;
             
-            if (m_playerMover != null)
+            if (this.m_playerMover != null)
             {
-                m_playerMover.MoveSpeed = m_originalMoveSpeed;
+                this.m_playerMover.MoveSpeed = this.m_originalMoveSpeed;
             }
-            else if (m_playerOrbitalMover != null)
+            else if (this.m_playerOrbitalMover != null)
             {
-                m_playerOrbitalMover.MoveSpeed = m_originalMoveSpeed;
+                this.m_playerOrbitalMover.MoveSpeed = this.m_originalMoveSpeed;
             }
         }
         #endregion

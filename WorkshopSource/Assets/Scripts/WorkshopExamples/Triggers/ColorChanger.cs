@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace WorkshopExamples.Triggers
+namespace WorkshopBehaviours.Session2.Triggers
 {
     /// <summary>
     /// Changes the triggering player's material color temporarily,
