@@ -1375,8 +1375,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95edbefba0844b86a9138e02f7f570ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorkshopExamples.Collectibles.TriggerZoneColor
-  colorEnter: {r: 0, g: 0, b: 0, a: 0}
-  exitColor: {r: 0, g: 0, b: 0, a: 0}
+  colorEnter: {r: 1, g: 0, b: 0, a: 1}
+  exitColor: {r: 0.14365315, g: 1, b: 0, a: 1}
 --- !u!135 &536068034
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1423,7 +1423,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: aff685fdac717477997cd38a8753af19, type: 2}
+  - {fileID: 2100000, guid: 7e43b487890baf74796ab34547473a7d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
